@@ -1,0 +1,95 @@
+:root {
+  /* Warm Premium Terracotta + Sand Color System */
+  --color-primary: #75452D;       /* Primary brand color / Deep Terracotta Brown */
+  --color-bg: #F7F0E6;            /* Primary background / Warm Sand */
+  --color-bg-secondary: #FFF9F2;  /* Secondary background / Soft Cream */
+  --color-white: #FFF9F2;         /* Card background / Soft Cream (Unified with secondary bg) */
+  --color-table-header: #F3E8DA;  /* Specific header color for admin tables */
+  
+  --color-text: #2D241F;          /* Main text / Dark Warm Charcoal */
+  --color-text-muted: #705F53;    /* Secondary text */
+  
+  --color-border: #E3D2BF;        /* Subtle borders */
+  --color-border-light: #EEE2D4;  /* Lighter border for delicate separations */
+  
+  --color-accent: #B45C3B;        /* Accent / Action / Terracotta */
+  --color-accent-hover: #623923;  /* Button hover / Darker Terracotta */
+  --color-soft: #D9A083;          /* Soft accent (derived from terracotta) */
+  
+  --color-success: #2F6B4F;
+  --color-success-bg: #E3EBE7;
+  
+  --color-error: #A44736;
+  --color-error-bg: #F3EBE9;
+  
+  --color-warning: #B7791F;
+  --color-warning-bg: #F5EFEB;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  
+  /* Borders & Shadows (Premium Flat) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --shadow-sm: 0 1px 2px rgba(45, 36, 31, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(45, 36, 31, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(45, 36, 31, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+a:hover, a:focus, a:active {
+  text-decoration: none !important;
+  color: var(--color-accent-hover);
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  color: var(--color-text);
+}
