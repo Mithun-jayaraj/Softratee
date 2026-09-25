@@ -40,13 +40,13 @@ const Customizer = () => {
         if (!selectedColor) {
           const colorsToUse = defaultColors.map(dc => {
             const found = productData.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
-            return found ? { ...dc, image: found.image } : dc;
-          });
+            return found && found.image ? { ...dc, image: found.image } : null;
+          }).filter(Boolean);
           const initialColorParam = searchParams.get("color");
           const matchedColor = colorsToUse.find(
             (c) => c.name === initialColorParam || c.hex === initialColorParam,
           );
-          setSelectedColor(matchedColor || colorsToUse[0]);
+          setSelectedColor(matchedColor || (colorsToUse.length > 0 ? colorsToUse[0] : null));
         }
         const { data: designsData } = await api.get("/designs");
         setDesigns(designsData);
@@ -93,8 +93,8 @@ const Customizer = () => {
     return <div className="customizer-loading">Loading product...</div>;
   const availableColors = defaultColors.map(dc => {
     const found = product?.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
-    return found ? { ...dc, image: found.image } : dc;
-  });
+    return found && found.image ? { ...dc, image: found.image } : null;
+  }).filter(Boolean);
   
   const getProductImage = (baseImage, color) => {
     if (!color) return baseImage;

@@ -23,6 +23,10 @@ const sendEmail = async (options) => {
       user: user,
       pass: pass,
     },
+    tls: {
+      rejectUnauthorized: false
+    },
+    family: 4,
   });
 
   try {

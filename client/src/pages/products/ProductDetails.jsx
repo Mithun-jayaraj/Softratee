@@ -30,12 +30,12 @@ const ProductDetails = () => {
         if (data.sizes?.length > 0) setSelectedSize(data.sizes[0]);
         
         const existingColors = data.colors || [];
-        const mergedColors = PREDEFINED_COLORS.map(pc => {
+        const availableWithImages = PREDEFINED_COLORS.map(pc => {
           const found = existingColors.find(ec => ec.name.toLowerCase() === pc.name.toLowerCase());
-          return found ? { ...pc, image: found.image || '' } : { ...pc, image: '' };
-        });
+          return found && found.image ? { ...pc, image: found.image } : null;
+        }).filter(Boolean);
         
-        setSelectedColor(mergedColors[0]);
+        setSelectedColor(availableWithImages.length > 0 ? availableWithImages[0] : null);
         setLoading(false);
       } catch (err) {
         setError("Product not found");
@@ -59,8 +59,8 @@ const ProductDetails = () => {
 
   const availableColors = PREDEFINED_COLORS.map(pc => {
     const found = product?.colors?.find(c => c.name.toLowerCase() === pc.name.toLowerCase());
-    return found ? { ...pc, image: found.image || '' } : { ...pc, image: '' };
-  });
+    return found && found.image ? { ...pc, image: found.image } : null;
+  }).filter(Boolean);
 
   return (
     <div className="product-details-page">

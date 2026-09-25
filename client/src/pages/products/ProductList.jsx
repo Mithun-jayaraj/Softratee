@@ -100,11 +100,11 @@ const ProductList = () => {
               <label>Color</label>
               <select value={color} onChange={(e) => setColor(e.target.value)}>
                 <option value="">All Colors</option>
-                <option value="#ffffff">White</option>
-                <option value="#000000">Black</option>
-                <option value="#ff0000">Red</option>
-                <option value="#0000ff">Blue</option>
-                <option value="#00ff00">Green</option>
+                <option value="White">White</option>
+                <option value="Black">Black</option>
+                <option value="Red">Red</option>
+                <option value="Blue">Blue</option>
+                <option value="Green">Green</option>
               </select>
             </div>
             <div className="filter-group price-group">
