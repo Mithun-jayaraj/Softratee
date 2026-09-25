@@ -15,8 +15,19 @@ const sendEmail = async (options) => {
     throw new Error('SMTP configuration missing.');
   }
 
+  const { promisify } = require('util');
+  const lookup = promisify(dns.lookup);
+  
+  let resolvedHost = host;
+  try {
+    const { address } = await lookup(host, { family: 4 });
+    resolvedHost = address;
+  } catch (err) {
+    console.error('[Forgot Password] DNS lookup failed for host:', host, err.message);
+  }
+
   const transporter = nodemailer.createTransport({
-    host: host,
+    host: resolvedHost,
     port: Number(port),
     secure: Number(port) === 465,
     auth: {
@@ -24,9 +35,9 @@ const sendEmail = async (options) => {
       pass: pass,
     },
     tls: {
+      servername: host,
       rejectUnauthorized: false
     },
-    family: 4,
   });
 
   try {
