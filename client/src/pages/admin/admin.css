@@ -275,7 +275,8 @@
 .admin-users-table,
 .admin-categories-table,
 .admin-designs-table,
-.admin-coupons-table {
+.admin-coupons-table,
+.admin-banners-table {
   display: block;
   min-width: 900px;
 }
@@ -285,7 +286,8 @@
 .admin-users-table thead, .admin-users-table tbody,
 .admin-categories-table thead, .admin-categories-table tbody,
 .admin-designs-table thead, .admin-designs-table tbody,
-.admin-coupons-table thead, .admin-coupons-table tbody {
+.admin-coupons-table thead, .admin-coupons-table tbody,
+.admin-banners-table thead, .admin-banners-table tbody {
   display: block;
   width: 100%;
 }
@@ -350,12 +352,23 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.admin-banners-table tr {
+  display: grid;
+  grid-template-columns: 100px 2.5fr 2fr 120px 120px;
+  column-gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+  min-height: 80px;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .admin-products-table tr:last-child,
 .admin-orders-table tr:last-child,
 .admin-users-table tr:last-child,
 .admin-categories-table tr:last-child,
 .admin-designs-table tr:last-child,
-.admin-coupons-table tr:last-child {
+.admin-coupons-table tr:last-child,
+.admin-banners-table tr:last-child {
   border-bottom: none;
 }
 
@@ -364,7 +377,8 @@
 .table.admin-users-table th, .table.admin-users-table td,
 .table.admin-categories-table th, .table.admin-categories-table td,
 .table.admin-designs-table th, .table.admin-designs-table td,
-.table.admin-coupons-table th, .table.admin-coupons-table td {
+.table.admin-coupons-table th, .table.admin-coupons-table td,
+.table.admin-banners-table th, .table.admin-banners-table td {
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;

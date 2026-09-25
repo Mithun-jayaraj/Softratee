@@ -80,69 +80,103 @@ const AdminBanners = () => {
     }
   };
   return (
-    <div className="admin-page">
-      <h2>Homepage Banners</h2>
-      <div className="admin-card" style={{ marginBottom: '2rem' }}>
-        <h3>Upload New Banner</h3>
-        <form className="admin-form" onSubmit={submitHandler}>
-          <div className="form-group">
-            <label>Title</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+    <div className="page-container admin-page">
+      <div className="admin-header-section" style={{ marginBottom: '2rem' }}>
+        <h2 className="admin-page-title">Homepage Banners</h2>
+        <p className="admin-page-subtitle">Create and manage promotional banners for your storefront.</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>Upload New Banner</h3>
+        </div>
+        <form onSubmit={submitHandler}>
+          <div style={{ maxWidth: '600px' }}>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label>Banner Title</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Summer Collection Sale" required />
+            </div>
+            
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label>Banner Image</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <input type="file" onChange={uploadFileHandler} style={{ padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                <span className="text-muted" style={{ fontSize: '0.8rem' }}>JPG, PNG or WEBP. Upload a high-quality image for your banner.</span>
+              </div>
+              {uploading && <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-primary)' }}>Uploading...</p>}
+              {imageUrl && <img src={imageUrl} alt="preview" style={{ width: '160px', height: '80px', marginTop: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', objectFit: 'cover' }} />}
+            </div>
+
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <input type="checkbox" id="isactive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+              <label htmlFor="isactive" style={{ margin: 0, fontWeight: 500, color: 'var(--color-text)' }}>Active - Show this banner on the homepage</label>
+            </div>
+            
+            <button type="submit" className="btn btn-primary" disabled={uploading}>Save Banner</button>
           </div>
-          <div className="form-group">
-            <label>Image</label>
-            <input type="file" onChange={uploadFileHandler} />
-            {uploading && <p>Uploading...</p>}
-            {imageUrl && <img src={imageUrl} alt="preview" style={{ width: '150px', marginTop: '10px' }} />}
-          </div>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input type="checkbox" id="isactive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
-            <label htmlFor="isactive" style={{ margin: 0 }}>Active</label>
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={uploading}>Save Banner</button>
         </form>
       </div>
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
-      ) : (
-        <div className="table-wrapper">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>TITLE</th>
-              <th>IMAGE</th>
-              <th>STATUS</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {banners.map((b) => (
-              <tr key={b._id}>
-                <td>{b._id.substring(0, 8)}...</td>
-                <td>{b.title}</td>
-                <td><img src={b.imageUrl} alt={b.title} style={{ width: '100px' }} /></td>
-                <td>
-                  <button 
-                    className={`btn ${b.isActive ? 'btn-primary' : 'btn-light'}`}
-                    onClick={() => toggleActiveHandler(b._id, b.isActive)}
-                  >
-                    {b.isActive ? 'Active' : 'Inactive'}
-                  </button>
-                </td>
-                <td className="table-actions">
-                  <button className="btn btn-danger" onClick={() => deleteHandler(b._id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="card">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>Homepage Banners</h3>
+          <p className="text-muted" style={{ fontSize: '0.85rem' }}>Manage your existing promotional banners.</p>
         </div>
-      )}
+
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : banners.length === 0 ? (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text)', fontSize: '1.1rem' }}>No homepage banners yet</h4>
+            <p>Upload your first banner to promote products, offers, or collections.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+          <table className="table admin-banners-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>TITLE</th>
+                <th>IMAGE</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {banners.map((b) => (
+                <tr key={b._id}>
+                  <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>{b._id.substring(0, 8)}...</td>
+                  <td style={{ fontWeight: 600 }}>{b.title}</td>
+                  <td>
+                    {b.imageUrl ? (
+                      <img src={b.imageUrl} alt={b.title} style={{ width: '140px', height: '70px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
+                    ) : (
+                      <span className="text-muted" style={{ fontSize: '0.85rem' }}>No image</span>
+                    )}
+                  </td>
+                  <td>
+                    <span 
+                      className={`badge ${b.isActive ? 'badge-success' : 'badge-neutral'}`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => toggleActiveHandler(b._id, b.isActive)}
+                    >
+                      {b.isActive ? '● Active' : '● Inactive'}
+                    </span>
+                  </td>
+                  <td className="table-actions">
+                    <button className="btn btn-danger" onClick={() => deleteHandler(b._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
