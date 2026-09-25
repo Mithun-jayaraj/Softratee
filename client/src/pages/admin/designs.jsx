@@ -37,7 +37,7 @@ const AdminDesigns = () => {
     try {
       const config = { headers: { 'Content-Type': 'multipart/form-data' } };
       const { data } = await api.post('/upload', formData, config);
-      setImageUrl(data.url);
+      setImageUrl(data.imageUrl);
       setUploading(false);
     } catch (err) {
       alert('Image upload failed');
