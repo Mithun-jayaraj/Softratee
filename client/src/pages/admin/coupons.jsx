@@ -50,56 +50,87 @@ const AdminCoupons = () => {
     }
   };
   return (
-    <div className="admin-page">
-      <h2>Coupons</h2>
-      <div className="admin-card" style={{ marginBottom: '2rem' }}>
-        <h3>Create New Coupon</h3>
-        <form className="admin-form" onSubmit={submitHandler}>
-          <div className="form-group">
-            <label>Code (e.g. SUMMER20)</label>
-            <input type="text" value={code} onChange={(e) => setCode(e.target.value)} required />
+    <div className="page-container admin-page">
+      <div className="admin-header-section" style={{ marginBottom: '2rem' }}>
+        <h2 className="admin-page-title">Coupons</h2>
+        <p className="admin-page-subtitle">Create and manage discount coupons for your store.</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>Create New Coupon</h3>
+        </div>
+        <form onSubmit={submitHandler}>
+          <div style={{ maxWidth: '700px' }}>
+            <div className="form-row" style={{ gap: '1.5rem' }}>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label>Coupon Code</label>
+                <input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. SUMMER20" required />
+              </div>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label>Discount Percentage</label>
+                <input type="number" min="1" max="100" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} placeholder="e.g. 20" required />
+              </div>
+            </div>
+            <div style={{ marginTop: '0.5rem' }}>
+              <button type="submit" className="btn btn-primary">Create Coupon</button>
+            </div>
           </div>
-          <div className="form-group">
-            <label>Discount Percentage (e.g. 20)</label>
-            <input type="number" min="1" max="100" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} required />
-          </div>
-          <button type="submit" className="btn btn-primary">Create</button>
         </form>
       </div>
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
-      ) : (
-        <div className="table-wrapper">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>CODE</th>
-              <th>DISCOUNT %</th>
-              <th>STATUS</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coupons.map((c) => (
-              <tr key={c._id}>
-                <td>{c._id.substring(0, 8)}...</td>
-                <td>{c.code}</td>
-                <td>{c.discountPercent}%</td>
-                <td>{c.isActive ? 'Active' : 'Inactive'}</td>
-                <td className="table-actions">
-                  <button className="btn btn-danger" onClick={() => deleteHandler(c._id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="card">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>All Coupons</h3>
+          <p className="text-muted" style={{ fontSize: '0.85rem' }}>Manage your active discount codes.</p>
         </div>
-      )}
+
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : coupons.length === 0 ? (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text)', fontSize: '1.1rem' }}>No coupons yet</h4>
+            <p>Create your first discount coupon to offer promotions to customers.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+          <table className="table admin-coupons-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>CODE</th>
+                <th>DISCOUNT</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coupons.map((c) => (
+                <tr key={c._id}>
+                  <td style={{ fontFamily: 'monospace', color: 'var(--color-text-muted)' }}>{c._id.substring(0, 8)}...</td>
+                  <td style={{ fontWeight: 600 }}>{c.code}</td>
+                  <td style={{ fontSize: '1.1rem', fontWeight: 600 }}>{c.discountPercent}%</td>
+                  <td>
+                    {c.isActive || c.isActive === undefined ? (
+                      <span className="badge badge-success">● Active</span>
+                    ) : (
+                      <span className="badge badge-neutral">● Inactive</span>
+                    )}
+                  </td>
+                  <td className="table-actions">
+                    <button className="btn btn-danger" onClick={() => deleteHandler(c._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
