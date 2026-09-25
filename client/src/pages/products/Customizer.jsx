@@ -4,15 +4,11 @@ import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
 import "./customizer.css";
 const defaultColors = [
-  { name: "White", hex: "#FFFFFF" },
-  { name: "Black", hex: "#111111" },
-  { name: "Light Grey", hex: "#D9D9D9" },
-  { name: "Navy", hex: "#1F2937" },
-  { name: "Red", hex: "#C94B3C" },
-  { name: "Royal Blue", hex: "#3B82F6" },
-  { name: "Green", hex: "#3F5F4A" },
-  { name: "Beige", hex: "#D8C3A5" },
-  { name: "Brown", hex: "#7A4A2E" },
+  { name: 'White', hex: '#FFFFFF' },
+  { name: 'Black', hex: '#000000' },
+  { name: 'Red', hex: '#EF2222' },
+  { name: 'Blue', hex: '#2563EB' },
+  { name: 'Green', hex: '#15803D' }
 ];
 const Customizer = () => {
   const { user } = React.useContext(AuthContext);
@@ -42,8 +38,10 @@ const Customizer = () => {
         if (!size && productData.sizes?.length > 0)
           setSize(productData.sizes[0]);
         if (!selectedColor) {
-          const colorsToUse =
-            productData.colors?.length > 0 ? productData.colors : defaultColors;
+          const colorsToUse = defaultColors.map(dc => {
+            const found = productData.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
+            return found ? { ...dc, image: found.image } : dc;
+          });
           const initialColorParam = searchParams.get("color");
           const matchedColor = colorsToUse.find(
             (c) => c.name === initialColorParam || c.hex === initialColorParam,
@@ -93,21 +91,14 @@ const Customizer = () => {
   };
   if (loading)
     return <div className="customizer-loading">Loading product...</div>;
-  const availableColors =
-    product?.colors?.length > 0 ? product.colors : defaultColors;
+  const availableColors = defaultColors.map(dc => {
+    const found = product?.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
+    return found ? { ...dc, image: found.image } : dc;
+  });
+  
   const getProductImage = (baseImage, color) => {
     if (!color) return baseImage;
-    if (baseImage?.includes("hero_model")) {
-      const name = color.name.toLowerCase();
-      if (name.includes("white")) return "/images/products/tshirt-white.png";
-      if (name.includes("black")) return "/images/products/tshirt-black.png";
-      if (name.includes("grey") || name.includes("gray"))
-        return "/images/products/tshirt-gray.png";
-      if (name.includes("orange") || name.includes("rust"))
-        return "/images/products/tshirt-orange.png";
-      if (name.includes("brown")) return "/images/products/tshirt-brown.png";
-      return `/images/products/tshirt-${name.replace(/\s+/g, "-")}.png`;
-    }
+    if (color.image) return color.image;
     return baseImage;
   };
   return (

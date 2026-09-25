@@ -3,6 +3,15 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
 import "./products.css";
+
+const PREDEFINED_COLORS = [
+  { name: 'White', hex: '#FFFFFF' },
+  { name: 'Black', hex: '#000000' },
+  { name: 'Red', hex: '#EF2222' },
+  { name: 'Blue', hex: '#2563EB' },
+  { name: 'Green', hex: '#15803D' }
+];
+
 const ProductDetails = () => {
   const { user } = React.useContext(AuthContext);
   const { id } = useParams();
@@ -19,7 +28,14 @@ const ProductDetails = () => {
         const { data } = await api.get(`/products/${id}`);
         setProduct(data);
         if (data.sizes?.length > 0) setSelectedSize(data.sizes[0]);
-        if (data.colors?.length > 0) setSelectedColor(data.colors[0]);
+        
+        const existingColors = data.colors || [];
+        const mergedColors = PREDEFINED_COLORS.map(pc => {
+          const found = existingColors.find(ec => ec.name.toLowerCase() === pc.name.toLowerCase());
+          return found ? { ...pc, image: found.image || '' } : { ...pc, image: '' };
+        });
+        
+        setSelectedColor(mergedColors[0]);
         setLoading(false);
       } catch (err) {
         setError("Product not found");
@@ -40,6 +56,12 @@ const ProductDetails = () => {
   };
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error">{error}</div>;
+
+  const availableColors = PREDEFINED_COLORS.map(pc => {
+    const found = product?.colors?.find(c => c.name.toLowerCase() === pc.name.toLowerCase());
+    return found ? { ...pc, image: found.image || '' } : { ...pc, image: '' };
+  });
+
   return (
     <div className="product-details-page">
       <Link className="btn btn-light my-3" to="/products">
@@ -70,23 +92,33 @@ const ProductDetails = () => {
                   </select>
                 </div>
               )}
-              {product.colors?.length > 0 && (
+              {availableColors.length > 0 && (
                 <div className="option-group">
                   <label>Color:</label>
-                  <select
-                    value={selectedColor?.name || ""}
-                    onChange={(e) =>
-                      setSelectedColor(
-                        product.colors.find((c) => c.name === e.target.value),
-                      )
-                    }
-                  >
-                    {product.colors.map((colorObj) => (
-                      <option key={colorObj.name} value={colorObj.name}>
-                        {colorObj.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {availableColors.map((colorObj) => {
+                      const isSelected = selectedColor?.name === colorObj.name;
+                      return (
+                        <button
+                          key={colorObj.name}
+                          type="button"
+                          onClick={() => setSelectedColor(colorObj)}
+                          title={colorObj.name}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            backgroundColor: colorObj.hex,
+                            border: '2px solid var(--color-white)',
+                            outline: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            boxShadow: isSelected ? '0 0 0 2px var(--color-text)' : '0 0 0 1px var(--color-border)'
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
               )}
               <div className="option-group">

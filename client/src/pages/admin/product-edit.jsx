@@ -14,8 +14,18 @@ const ProductEdit = () => {
   const [countInStock, setCountInStock] = useState(0);
   const [description, setDescription] = useState('');
   const [sizes, setSizes] = useState([]);
-  const [colors, setColors] = useState('');
+  const [colors, setColors] = useState([]);
   const [uploading, setUploading] = useState(false);
+  
+  const [colorUploadingIndex, setColorUploadingIndex] = useState(-1);
+  
+  const PREDEFINED_COLORS = [
+    { name: 'White', hex: '#FFFFFF' },
+    { name: 'Black', hex: '#000000' },
+    { name: 'Red', hex: '#EF2222' },
+    { name: 'Blue', hex: '#2563EB' },
+    { name: 'Green', hex: '#15803D' }
+  ];
   const [categories, setCategories] = useState([]);
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   useEffect(() => {
@@ -35,7 +45,12 @@ const ProductEdit = () => {
         setCountInStock(data.countInStock);
         setDescription(data.description);
         setSizes(data.sizes || []);
-        setColors(data.colors ? JSON.stringify(data.colors, null, 2) : '[]');
+        const existingColors = data.colors || [];
+        const mergedColors = PREDEFINED_COLORS.map(pc => {
+          const found = existingColors.find(ec => ec.name.toLowerCase() === pc.name.toLowerCase());
+          return found ? { ...pc, image: found.image || '' } : { ...pc, image: '' };
+        });
+        setColors(mergedColors);
       } catch (err) {
         alert(err.response?.data?.message || 'Error fetching product');
       }
@@ -58,6 +73,30 @@ const ProductEdit = () => {
       alert('Error uploading image');
     }
   };
+
+  // Color Management
+  const handleColorImageUpload = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+    setColorUploadingIndex(index);
+    try {
+      const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+      const { data } = await api.post('/upload', formData, config);
+      
+      const updatedColors = [...colors];
+      updatedColors[index].image = data.imageUrl;
+      setColors(updatedColors);
+      
+      setColorUploadingIndex(-1);
+    } catch (err) {
+      console.error(err);
+      setColorUploadingIndex(-1);
+      alert('Error uploading color image');
+    }
+  };
+
   const toggleSize = (sizeOption) => {
     if (sizes.includes(sizeOption)) {
       setSizes(sizes.filter(s => s !== sizeOption));
@@ -68,13 +107,6 @@ const ProductEdit = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      let colorsArray = [];
-      try {
-        colorsArray = JSON.parse(colors);
-      } catch (e) {
-        alert('Invalid JSON in Colors field');
-        return;
-      }
       await api.put(`/products/${id}`, {
         name,
         price,
@@ -83,7 +115,7 @@ const ProductEdit = () => {
         description,
         countInStock,
         sizes,
-        colors: colorsArray
+        colors
       });
       navigate('/admin/products');
     } catch (err) {
@@ -202,16 +234,40 @@ const ProductEdit = () => {
                 ))}
               </div>
             </div>
-            <div className="form-group mb-0">
-              <label>Colors Configuration (JSON Array)</label>
-              <textarea
-                value={colors}
-                onChange={(e) => setColors(e.target.value)}
-                rows="6"
-                style={{ fontFamily: 'monospace' }}
-                placeholder='[{"name":"Black","hex":"#000000","image":"url"}]'
-              />
-              <small className="text-muted mt-1 d-flex">Used for rendering color swatches on the product page.</small>
+          </div>
+
+          <div className="form-section">
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Product Colors</h3>
+              <small className="text-muted">Only predefined colors (White, Black, Red, Blue, Green) are supported.</small>
+            </div>
+
+            <div className="color-cards-grid">
+              {colors.map((color, index) => (
+                <div key={index} className="color-card">
+                  <div className="color-card-header">
+                    <div className="color-swatch" style={{ backgroundColor: color.hex }}></div>
+                    <div className="color-name">{color.name}</div>
+                  </div>
+                  
+                  {color.image ? (
+                    <img src={color.image} alt={color.name} className="color-image-preview" />
+                  ) : (
+                    <div className="color-image-placeholder">No image</div>
+                  )}
+                  
+                  <div className="form-group mb-0 mt-2">
+                    <label style={{ fontSize: '0.8rem' }}>Change Image</label>
+                    <input 
+                      type="file" 
+                      onChange={(e) => handleColorImageUpload(e, index)} 
+                      accept="image/*" 
+                      style={{ padding: '0.2rem 0', border: 'none', width: '100%', fontSize: '0.8rem' }} 
+                    />
+                    {colorUploadingIndex === index && <div className="text-muted mt-1" style={{ fontSize: '0.8rem' }}>Uploading...</div>}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
           <div className="form-actions">
