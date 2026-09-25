@@ -70,56 +70,85 @@ const AdminDesigns = () => {
     }
   };
   return (
-    <div className="admin-page">
-      <h2>Custom Design Library</h2>
-      <div className="admin-card" style={{ marginBottom: '2rem' }}>
-        <h3>Upload New Design</h3>
-        <form className="admin-form" onSubmit={submitHandler}>
-          <div className="form-group">
-            <label>Name</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+    <div className="page-container admin-page">
+      <div className="admin-header-section" style={{ marginBottom: '2rem' }}>
+        <h2 className="admin-page-title">Custom Design Library</h2>
+        <p className="admin-page-subtitle">Upload and manage custom designs for your store.</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>Upload New Design</h3>
+          <p className="text-muted" style={{ fontSize: '0.85rem' }}>Add a new design to your custom design library.</p>
+        </div>
+        <form onSubmit={submitHandler}>
+          <div style={{ maxWidth: '600px' }}>
+            <div className="form-group">
+              <label>Design Name</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter design name" required />
+            </div>
+            <div className="form-group">
+              <label>Design Image</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <input type="file" onChange={uploadFileHandler} style={{ padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                <span className="text-muted" style={{ fontSize: '0.8rem' }}>Upload a high-quality image for your custom design.</span>
+              </div>
+              {uploading && <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-primary)' }}>Uploading...</p>}
+              {imageUrl && <img src={imageUrl} alt="preview" style={{ width: '100px', marginTop: '10px', borderRadius: '8px', border: '1px solid var(--color-border)' }} />}
+            </div>
+            <div style={{ marginTop: '1.5rem' }}>
+              <button type="submit" className="btn btn-primary" disabled={uploading}>+ Save Design</button>
+            </div>
           </div>
-          <div className="form-group">
-            <label>Image</label>
-            <input type="file" onChange={uploadFileHandler} />
-            {uploading && <p>Uploading...</p>}
-            {imageUrl && <img src={imageUrl} alt="preview" style={{ width: '100px', marginTop: '10px' }} />}
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={uploading}>Save Design</button>
         </form>
       </div>
-      {loading ? (
-        <div>Loading...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
-      ) : (
-        <div className="table-wrapper">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>NAME</th>
-              <th>IMAGE</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {designs.map((d) => (
-              <tr key={d._id}>
-                <td>{d._id.substring(0, 8)}...</td>
-                <td>{d.name}</td>
-                <td><img src={d.imageUrl} alt={d.name} style={{ width: '50px' }} /></td>
-                <td className="table-actions">
-                  <button className="btn btn-danger" onClick={() => deleteHandler(d._id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="card">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'var(--color-primary)' }}>Saved Designs</h3>
+          <p className="text-muted" style={{ fontSize: '0.85rem' }}>Manage your uploaded custom designs.</p>
         </div>
-      )}
+
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : designs.length === 0 ? (
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text)', fontSize: '1.1rem' }}>No custom designs yet</h4>
+            <p>Upload your first custom design using the form above.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+          <table className="table admin-designs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>IMAGE</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {designs.map((d) => (
+                <tr key={d._id}>
+                  <td style={{ fontFamily: 'monospace' }}>{d._id.substring(0, 8)}...</td>
+                  <td style={{ fontWeight: 500 }}>{d.name}</td>
+                  <td>
+                    <img src={d.imageUrl} alt={d.name} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
+                  </td>
+                  <td className="table-actions">
+                    <button className="btn btn-danger" onClick={() => deleteHandler(d._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
