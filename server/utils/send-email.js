@@ -15,19 +15,8 @@ const sendEmail = async (options) => {
     throw new Error('SMTP configuration missing.');
   }
 
-  const { promisify } = require('util');
-  const lookup = promisify(dns.lookup);
-  
-  let resolvedHost = host;
-  try {
-    const { address } = await lookup(host, { family: 4 });
-    resolvedHost = address;
-  } catch (err) {
-    console.error('[Forgot Password] DNS lookup failed for host:', host, err.message);
-  }
-
   const transporter = nodemailer.createTransport({
-    host: resolvedHost,
+    host: host,
     port: Number(port),
     secure: Number(port) === 465,
     auth: {
@@ -35,17 +24,25 @@ const sendEmail = async (options) => {
       pass: pass,
     },
     tls: {
-      servername: host,
       rejectUnauthorized: false
     },
+    // Force IPv4 according to prompt instructions
+    family: 4,
+    dns: {
+      family: 4
+    }
   });
+
+  console.log(`[Forgot Password] SMTP configuration detected for host: ${host}, port: ${port}`);
+  console.log('[Forgot Password] SMTP transporter initialized');
 
   try {
     console.log('[Forgot Password] Attempting SMTP connection');
     await transporter.verify();
+    console.log('[Forgot Password] SMTP connection successful');
   } catch (err) {
-    console.error('[Forgot Password] SMTP Authentication failed:', err.message);
-    throw new Error('Email could not be sent due to configuration error.');
+    console.error(`[Forgot Password] SMTP Authentication failed for ${host}:${port}. Error:`, err.message);
+    // Do not throw here so server doesn't fail completely if verify temporarily fails
   }
 
   const message = {
@@ -63,8 +60,9 @@ const sendEmail = async (options) => {
   try {
     const info = await transporter.sendMail(message);
     console.log('[Forgot Password] OTP email sent successfully. Message ID:', info.messageId);
+    console.log('[Forgot Password] Email sent successfully');
   } catch (error) {
-    console.error('[Forgot Password] Email sending failed:', error.message);
+    console.error(`[Forgot Password] Email sending failed for ${host}:${port}. Error:`, error.message);
     throw new Error('Email could not be sent. Please try again later.');
   }
 };
