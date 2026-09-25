@@ -292,8 +292,8 @@
   border-bottom: none;
 }
 
-.admin-products-table th, 
-.admin-products-table td {
+.table.admin-products-table th, 
+.table.admin-products-table td {
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
