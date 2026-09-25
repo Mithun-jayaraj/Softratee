@@ -50,17 +50,17 @@ const Home = () => {
     {
       name: "Men",
       link: "/products?category=Men",
-      bg: "https://images.unsplash.com/photo-1516826957135-7331811a5eb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      bg: "/images/categories/men.jpg",
     },
     {
       name: "Women",
       link: "/products?category=Women",
-      bg: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      bg: "/images/categories/women.jpg",
     },
     {
       name: "Kids",
       link: "/products?category=Kids",
-      bg: "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      bg: "/images/categories/kids.jpg",
     },
   ];
   const latestProducts = [...products]
