@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
       city: { type: String },
       postalCode: { type: String },
       country: { type: String },
-    }
+    },
   },
   {
     timestamps: true,
@@ -41,5 +41,7 @@ userSchema.pre('save', async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
+
+// Generate and hash password token removed in favor of OTP
 const User = mongoose.model('User', userSchema);
 module.exports = User;

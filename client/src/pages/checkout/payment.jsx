@@ -13,6 +13,10 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState('Razorpay');
   const [isProcessing, setIsProcessing] = useState(false);
   useEffect(() => {
+    if (user?.isAdmin) {
+      navigate('/products');
+      return;
+    }
     if (!user) {
       navigate(`/login?redirect=payment/${id}`);
       return;

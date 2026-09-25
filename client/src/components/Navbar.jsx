@@ -1,1 +1,176 @@
-import React, { useContext, useState } from 'react';import { Link, useNavigate } from 'react-router-dom';import { AuthContext } from '../context/AuthContext';import './Navbar.css';const Navbar = () => {  const { user, logout } = useContext(AuthContext);  const navigate = useNavigate();  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);  const [keyword, setKeyword] = useState('');  const handleLogout = () => {    logout();    navigate('/login');  };  const toggleMobileMenu = () => {    setMobileMenuOpen(!mobileMenuOpen);  };  const submitSearch = (e) => {    e.preventDefault();    if (keyword.trim()) {      navigate(`/products?keyword=${keyword}`);      setMobileMenuOpen(false);    }  };  return (    <nav className="navbar">      <div className="navbar-container">        <Link to="/" className="navbar-brand">          SoftraTees        </Link>        <button className="mobile-toggle" onClick={toggleMobileMenu}>          ☰        </button>        <div className={`navbar-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>          <div className="nav-main-links">            {user?.isAdmin ? (              <>                <Link to="/admin" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>                <Link to="/admin/products" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Products</Link>                <Link to="/admin/orders" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Orders</Link>                <Link to="/admin/users" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Users</Link>                <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>View Store</Link>              </>            ) : (              <>                <Link to="/" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>                <Link to="/products" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Shop</Link>                <a href="/#customizer" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Customizer</a>                <a href="/#categories" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Categories</a>              </>            )}          </div>          <form className="nav-search-form" onSubmit={submitSearch}>            <input               type="text"               placeholder="Search products..."               value={keyword}              onChange={(e) => setKeyword(e.target.value)}              className="nav-search-input"            />            <button type="submit" className="nav-search-btn">🔍</button>          </form>          <div className="nav-actions">            {!user?.isAdmin && (              <Link to="/cart" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Cart</Link>            )}            {user ? (              <div className="user-menu">                <Link to="/profile" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Profile</Link>                {user.isAdmin && (                  <Link to="/admin" className="nav-link admin-link" onClick={() => setMobileMenuOpen(false)}>Admin</Link>                )}                <button onClick={handleLogout} className="logout-button">                  Logout                </button>              </div>            ) : (              <div className="auth-links">                <Link to="/login" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Login</Link>                <Link to="/register" className="login-button" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>              </div>            )}          </div>        </div>      </div>    </nav>  );};export default Navbar;
+import React, { useContext, useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import "./Navbar.css";
+const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isActive = (path) => location.pathname === path ? 'active-nav-link' : '';
+  const [keyword, setKeyword] = useState("");
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+  const submitSearch = (e) => {
+    e.preventDefault();
+    if (keyword.trim()) {
+      navigate(`/products?keyword=${keyword}`);
+      setMobileMenuOpen(false);
+    }
+  };
+  return (
+    <nav className="navbar">
+      <div className="navbar-container">
+        <Link to="/" className="navbar-brand">
+          SoftraTees
+        </Link>
+        <button className="mobile-toggle" onClick={toggleMobileMenu}>
+          ☰
+        </button>
+        <div className={`navbar-links ${mobileMenuOpen ? "mobile-open" : ""}`}>
+          <div className="nav-main-links">
+            {user?.isAdmin ? (
+              <>
+                <Link
+                  to="/admin"
+                  className={`nav-link ${isActive('/admin')}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/admin/products"
+                  className={`nav-link ${isActive('/admin/products')}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Products
+                </Link>
+                <Link
+                  to="/admin/orders"
+                  className={`nav-link ${isActive('/admin/orders')}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Orders
+                </Link>
+                <Link
+                  to="/admin/users"
+                  className={`nav-link ${isActive('/admin/users')}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Users
+                </Link>
+                <Link
+                  to="/"
+                  className="nav-link view-store-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  View Store
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/products"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Shop
+                </Link>
+                <a
+                  href="/#customizer"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Customizer
+                </a>
+                <a
+                  href="/#categories"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Categories
+                </a>
+              </>
+            )}
+          </div>
+          <form className="nav-search-form" onSubmit={submitSearch}>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="nav-search-input"
+            />
+            <button type="submit" className="nav-search-btn">
+              🔍
+            </button>
+          </form>
+          <div className="nav-actions">
+            {!user?.isAdmin && (
+              <Link
+                to="/cart"
+                className="nav-link"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Cart
+              </Link>
+            )}
+            {user ? (
+              <div className="user-menu">
+                <Link
+                  to="/profile"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                {user.isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="nav-link admin-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                <button onClick={handleLogout} className="logout-button">
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="auth-links">
+                <Link
+                  to="/login"
+                  className="nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="login-button"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+export default Navbar;

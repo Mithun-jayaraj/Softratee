@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
+import { AuthContext } from '../../context/AuthContext';
 import api from '../../services/api';
 import './cart.css';
 const Cart = () => {
@@ -12,9 +13,17 @@ const Cart = () => {
   const color = searchParams.get('color') || '';
   const customConfigStr = searchParams.get('custom');
   const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
   useEffect(() => {
-    if (id) {
+    if (user?.isAdmin) {
+      navigate('/products');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (id && !user?.isAdmin) {
       const fetchProductAndAdd = async () => {
         try {
           const { data } = await api.get(`/products/${id}`);
@@ -39,7 +48,7 @@ const Cart = () => {
       };
       fetchProductAndAdd();
     }
-  }, [id, qty, size, color, customConfigStr, addToCart, navigate]);
+  }, [id, qty, size, color, customConfigStr, addToCart, navigate, user]);
   const checkoutHandler = () => {
     navigate('/login?redirect=checkout');
   };

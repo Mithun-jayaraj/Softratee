@@ -1,2 +1,182 @@
-import React, { useState, useEffect } from 'react';import { Link, useSearchParams, useLocation } from 'react-router-dom';import api from '../../services/api';import './products.css';const ProductList = () => {  const [products, setProducts] = useState([]);  const [categories, setCategories] = useState([]);  const [loading, setLoading] = useState(true);  const [error, setError] = useState(null);  const [searchParams, setSearchParams] = useSearchParams();  const location = useLocation();  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');  const [category, setCategory] = useState(searchParams.get('category') || '');  const [size, setSize] = useState(searchParams.get('size') || '');  const [color, setColor] = useState(searchParams.get('color') || '');  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');  useEffect(() => {    setKeyword(searchParams.get('keyword') || '');    setCategory(searchParams.get('category') || '');    setSize(searchParams.get('size') || '');    setColor(searchParams.get('color') || '');    setMinPrice(searchParams.get('minPrice') || '');    setMaxPrice(searchParams.get('maxPrice') || '');  }, [location.search]);  const fetchProducts = async () => {    try {      setLoading(true);      setError(null);      const currentKeyword = searchParams.get('keyword') || keyword;      const currentCategory = searchParams.get('category') || category;      let queryParams = `?keyword=${currentKeyword}`;      if (currentCategory) queryParams += `&category=${currentCategory}`;      if (size) queryParams += `&size=${size}`;      if (color) queryParams += `&color=${encodeURIComponent(color)}`;      if (minPrice) queryParams += `&minPrice=${minPrice}`;      if (maxPrice) queryParams += `&maxPrice=${maxPrice}`;      const { data } = await api.get(`/products${queryParams}`);      setProducts(data);      setLoading(false);    } catch (err) {      console.error(err);      setError('Failed to fetch products');      setLoading(false);    }  };  useEffect(() => {    fetchProducts();    // eslint-disable-next-line  }, [location.search]);  const handleFilterSubmit = (e) => {    e.preventDefault();    const params = new URLSearchParams();    if (keyword) params.set('keyword', keyword);    if (category) params.set('category', category);    if (size) params.set('size', size);    if (color) params.set('color', color);    if (minPrice) params.set('minPrice', minPrice);    if (maxPrice) params.set('maxPrice', maxPrice);    setSearchParams(params);  };  const clearFilters = () => {    setKeyword('');    setCategory('');    setSize('');    setColor('');    setMinPrice('');    setMaxPrice('');    setSearchParams({}); 
-  };  return (    <div className="product-page">      <div className="product-header">        <h2>Shop Custom T-Shirts</h2>      </div>      <div className="product-layout">        <aside className="filter-sidebar">          <h3>Filters</h3>          <form onSubmit={handleFilterSubmit}>            <div className="filter-group">              <label>Search</label>              <input                type="text"                placeholder="Search name..."                value={keyword}                onChange={(e) => setKeyword(e.target.value)}              />            </div>            <div className="filter-group">              <label>Size</label>              <select value={size} onChange={(e) => setSize(e.target.value)}>                <option value="">All Sizes</option>                <option value="S">Small (S)</option>                <option value="M">Medium (M)</option>                <option value="L">Large (L)</option>                <option value="XL">Extra Large (XL)</option>              </select>            </div>            <div className="filter-group">              <label>Color</label>              <select value={color} onChange={(e) => setColor(e.target.value)}>                <option value="">All Colors</option>                <option value="#ffffff">White</option>                <option value="#000000">Black</option>                <option value="#ff0000">Red</option>                <option value="#0000ff">Blue</option>                <option value="#00ff00">Green</option>              </select>            </div>            <div className="filter-group price-group">              <label>Price Range</label>              <div style={{ display: 'flex', gap: '0.5rem' }}>                <input                  type="number"                  placeholder="Min ₹"                  value={minPrice}                  onChange={(e) => setMinPrice(e.target.value)}                />                <input                  type="number"                  placeholder="Max ₹"                  value={maxPrice}                  onChange={(e) => setMaxPrice(e.target.value)}                />              </div>            </div>            <button type="submit" className="btn btn-primary btn-block">Apply Filters</button>            <button type="button" className="btn btn-light btn-block" onClick={clearFilters} style={{ marginTop: '0.5rem' }}>Clear</button>          </form>        </aside>        <div className="product-main">          {loading ? (            <div>Loading...</div>          ) : error ? (            <div className="error">{error}</div>          ) : products.length === 0 ? (            <div>No products found matching your filters.</div>          ) : (            <div className="product-grid">              {products.map((product) => (                <div key={product._id} className="product-card">                  <Link to={`/product/${product._id}`}>                    <img                       src={product.image}                       alt={product.name}                       className="product-image"                      onError={(e) => { e.target.onerror = null; e.target.src = '/images/products/product_fallback.jpg'; }}                    />                  </Link>                  <div className="product-info">                    <Link to={`/product/${product._id}`} className="product-title">                      <h3>{product.name}</h3>                    </Link>                    <div className="product-price">₹{product.price.toFixed(2)}</div>                  </div>                </div>              ))}            </div>          )}        </div>      </div>    </div>  );};export default ProductList;
+import React, { useState, useEffect } from "react";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
+import api from "../../services/api";
+import "./products.css";
+const ProductList = () => {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
+  const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [size, setSize] = useState(searchParams.get("size") || "");
+  const [color, setColor] = useState(searchParams.get("color") || "");
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
+  useEffect(() => {
+    setKeyword(searchParams.get("keyword") || "");
+    setCategory(searchParams.get("category") || "");
+    setSize(searchParams.get("size") || "");
+    setColor(searchParams.get("color") || "");
+    setMinPrice(searchParams.get("minPrice") || "");
+    setMaxPrice(searchParams.get("maxPrice") || "");
+  }, [location.search]);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const currentKeyword = searchParams.get("keyword") || keyword;
+      const currentCategory = searchParams.get("category") || category;
+      let queryParams = `?keyword=${currentKeyword}`;
+      if (currentCategory) queryParams += `&category=${currentCategory}`;
+      if (size) queryParams += `&size=${size}`;
+      if (color) queryParams += `&color=${encodeURIComponent(color)}`;
+      if (minPrice) queryParams += `&minPrice=${minPrice}`;
+      if (maxPrice) queryParams += `&maxPrice=${maxPrice}`;
+      const { data } = await api.get(`/products${queryParams}`);
+      setProducts(data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch products");
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line
+  }, [location.search]);
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (keyword) params.set("keyword", keyword);
+    if (category) params.set("category", category);
+    if (size) params.set("size", size);
+    if (color) params.set("color", color);
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+    setSearchParams(params);
+  };
+  const clearFilters = () => {
+    setKeyword("");
+    setCategory("");
+    setSize("");
+    setColor("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSearchParams({});
+  };
+  return (
+    <div className="product-page">
+      <div className="product-header">
+        <h2>Shop Custom T-Shirts</h2>
+      </div>
+      <div className="product-layout">
+        <aside className="filter-sidebar">
+          <h3>Filters</h3>
+          <form onSubmit={handleFilterSubmit}>
+            <div className="filter-group">
+              <label>Search</label>
+              <input
+                type="text"
+                placeholder="Search name..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
+            <div className="filter-group">
+              <label>Size</label>
+              <select value={size} onChange={(e) => setSize(e.target.value)}>
+                <option value="">All Sizes</option>
+                <option value="S">Small (S)</option>
+                <option value="M">Medium (M)</option>
+                <option value="L">Large (L)</option>
+                <option value="XL">Extra Large (XL)</option>
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>Color</label>
+              <select value={color} onChange={(e) => setColor(e.target.value)}>
+                <option value="">All Colors</option>
+                <option value="#ffffff">White</option>
+                <option value="#000000">Black</option>
+                <option value="#ff0000">Red</option>
+                <option value="#0000ff">Blue</option>
+                <option value="#00ff00">Green</option>
+              </select>
+            </div>
+            <div className="filter-group price-group">
+              <label>Price Range</label>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <input
+                  type="number"
+                  placeholder="Min ₹"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                />
+                <input
+                  type="number"
+                  placeholder="Max ₹"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary btn-block">
+              Apply Filters
+            </button>
+            <button
+              type="button"
+              className="btn btn-light btn-block"
+              onClick={clearFilters}
+              style={{ marginTop: "0.5rem" }}
+            >
+              Clear
+            </button>
+          </form>
+        </aside>
+        <div className="product-main">
+          {loading ? (
+            <div>Loading...</div>
+          ) : error ? (
+            <div className="error">{error}</div>
+          ) : products.length === 0 ? (
+            <div>No products found matching your filters.</div>
+          ) : (
+            <div className="product-grid">
+              {products.map((product) => (
+                <div key={product._id} className="product-card">
+                  <Link to={`/product/${product._id}`}>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="product-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/images/products/product_fallback.jpg";
+                      }}
+                    />
+                  </Link>
+                  <div className="product-info">
+                    <Link
+                      to={`/product/${product._id}`}
+                      className="product-title"
+                    >
+                      <h3>{product.name}</h3>
+                    </Link>
+                    <div className="product-price">
+                      ₹{product.price.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+export default ProductList;

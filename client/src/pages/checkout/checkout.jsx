@@ -30,6 +30,10 @@ const Checkout = () => {
     fetchCoupons();
   }, []);
   useEffect(() => {
+    if (user?.isAdmin) {
+      navigate('/products');
+      return;
+    }
     if (!user) {
       navigate('/login?redirect=checkout');
     } else {

@@ -15,76 +15,180 @@
   margin: 0;
 }
 
-/* Dashboard Grid */
-.dashboard-grid {
+/* Admin Dashboard Headers */
+.admin-header-section {
+  margin-bottom: 2.5rem;
+}
+
+.admin-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.admin-page-subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Stats Grid */
+.admin-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
   margin-bottom: 3rem;
 }
 
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
+@media (max-width: 1024px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.stat-card-title {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
+@media (max-width: 600px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.stat-card-value {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin: 0;
-  line-height: 1;
-}
-
-.stat-card-value.success { color: var(--color-success); }
-.stat-card-value.accent { color: var(--color-accent); }
-.stat-card-value.danger { color: var(--color-error); }
-
-/* Quick Links Hub */
-.management-hub {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
-.hub-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
+.admin-stat-card {
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-icon {
+  color: var(--color-text-light);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--color-text);
-  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.stat-caption {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* Management Hub */
+.admin-management-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.management-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.nav-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.hub-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+.nav-card:hover {
+  border-color: var(--color-text-muted);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
-.hub-icon {
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
+.nav-card-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
   background: var(--color-bg);
+  color: var(--color-text);
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.nav-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-card-content h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.nav-card-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.nav-card-arrow {
+  color: var(--color-border);
+  margin-top: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.nav-card:hover .nav-card-arrow {
+  color: var(--color-text);
 }
 
 /* Two Column Layout (Edit Product) */

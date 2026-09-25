@@ -11,6 +11,10 @@ const Confirmation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   useEffect(() => {
+    if (user?.isAdmin) {
+      navigate('/products');
+      return;
+    }
     if (!user) {
       navigate('/login');
       return;

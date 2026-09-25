@@ -9,8 +9,15 @@ const {
   deleteUser,
   getUserById,
   updateUser,
+  generateOtp,
+  verifyOtp,
+  resetPassword,
 } = require('../controllers/auth-controller');
 const { protect, admin } = require('../middleware/auth-middleware');
+
+router.post('/generate-otp', generateOtp);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password', resetPassword);
 router.route('/').get(protect, admin, getUsers);
 router.post('/register', registerUser);
 router.post('/login', authUser);

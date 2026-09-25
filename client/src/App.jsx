@@ -1,1 +1,83 @@
-import React from 'react';import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';import ScrollToTop from './components/ScrollToTop';import Navbar from './components/Navbar';import Login from './pages/auth/login';import Register from './pages/auth/register';import Products from './pages/admin/products';import ProductEdit from './pages/admin/product-edit';import ProductList from './pages/products/ProductList';import ProductDetails from './pages/products/ProductDetails';import Customizer from './pages/products/Customizer';import Cart from './pages/cart/cart';import Checkout from './pages/checkout/checkout';import Payment from './pages/checkout/payment';import Confirmation from './pages/checkout/confirmation';import Profile from './pages/profile/profile';import OrderDetails from './pages/orders/order-details';import Dashboard from './pages/admin/dashboard';import AdminOrders from './pages/admin/orders';import AdminUsers from './pages/admin/users';import AdminUserEdit from './pages/admin/user-edit';import AdminCoupons from './pages/admin/coupons';import AdminDesigns from './pages/admin/designs';import AdminBanners from './pages/admin/banners';import AdminCategories from './pages/admin/categories';import { AuthProvider } from './context/AuthContext';import { CartProvider } from './context/CartContext';import Home from './pages/home/Home';import Footer from './components/Footer';import './App.css';function App() {  return (    <AuthProvider>      <CartProvider>        <Router>          <ScrollToTop />          <div className="app">          <Navbar />          <main className="main-content">            <Routes>              <Route path="/" element={<Home />} />              <Route path="/login" element={<Login />} />              <Route path="/register" element={<Register />} />              <Route path="/profile" element={<Profile />} />              <Route path="/products" element={<ProductList />} />              <Route path="/product/:id" element={<ProductDetails />} />              <Route path="/customizer/:id" element={<Customizer />} />              <Route path="/cart/:id?" element={<Cart />} />              <Route path="/checkout" element={<Checkout />} />              <Route path="/payment/:id" element={<Payment />} />              <Route path="/order/:id/confirmation" element={<Confirmation />} />              <Route path="/order/:id" element={<OrderDetails />} />              <Route path="/admin" element={<Dashboard />} />              <Route path="/admin/products" element={<Products />} />              <Route path="/admin/product/:id/edit" element={<ProductEdit />} />              <Route path="/admin/orders" element={<AdminOrders />} />              <Route path="/admin/users" element={<AdminUsers />} />              <Route path="/admin/user/:id/edit" element={<AdminUserEdit />} />              <Route path="/admin/coupons" element={<AdminCoupons />} />              <Route path="/admin/designs" element={<AdminDesigns />} />              <Route path="/admin/banners" element={<AdminBanners />} />              <Route path="/admin/categories" element={<AdminCategories />} />            </Routes>          </main>          <Footer />        </div>        </Router>      </CartProvider>    </AuthProvider>  );}export default App;
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
+import Navbar from "./components/Navbar";
+import Login from "./pages/auth/login";
+import Register from "./pages/auth/register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import Products from "./pages/admin/products";
+import ProductEdit from "./pages/admin/product-edit";
+import ProductList from "./pages/products/ProductList";
+import ProductDetails from "./pages/products/ProductDetails";
+import Customizer from "./pages/products/Customizer";
+import Cart from "./pages/cart/cart";
+import Checkout from "./pages/checkout/checkout";
+import Payment from "./pages/checkout/payment";
+import Confirmation from "./pages/checkout/confirmation";
+import Profile from "./pages/profile/profile";
+import OrderDetails from "./pages/orders/order-details";
+import Dashboard from "./pages/admin/dashboard";
+import AdminOrders from "./pages/admin/orders";
+import AdminUsers from "./pages/admin/users";
+import AdminUserEdit from "./pages/admin/user-edit";
+import AdminCoupons from "./pages/admin/coupons";
+import AdminDesigns from "./pages/admin/designs";
+import AdminBanners from "./pages/admin/banners";
+import AdminCategories from "./pages/admin/categories";
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import Home from "./pages/home/Home";
+import Footer from "./components/Footer";
+import "./App.css";
+function App() {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="app">
+            <Navbar />
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/products" element={<ProductList />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/customizer/:id" element={<Customizer />} />
+                <Route path="/cart/:id?" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment/:id" element={<Payment />} />
+                <Route
+                  path="/order/:id/confirmation"
+                  element={<Confirmation />}
+                />
+                <Route path="/order/:id" element={<OrderDetails />} />
+                <Route path="/admin" element={<Dashboard />} />
+                <Route path="/admin/products" element={<Products />} />
+                <Route
+                  path="/admin/product/:id/edit"
+                  element={<ProductEdit />}
+                />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                <Route
+                  path="/admin/user/:id/edit"
+                  element={<AdminUserEdit />}
+                />
+                <Route path="/admin/coupons" element={<AdminCoupons />} />
+                <Route path="/admin/designs" element={<AdminDesigns />} />
+                <Route path="/admin/banners" element={<AdminBanners />} />
+                <Route path="/admin/categories" element={<AdminCategories />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
+  );
+}
+export default App;
