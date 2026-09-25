@@ -47,7 +47,7 @@ const AdminUsers = () => {
         <div className="error">{error}</div>
       ) : (
         <div className="table-wrapper">
-        <table className="table">
+        <table className="table admin-users-table">
           <thead>
             <tr>
               <th>ID</th>

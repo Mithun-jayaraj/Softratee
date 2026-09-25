@@ -34,7 +34,7 @@ const Orders = () => {
         <h2>Manage Orders</h2>
       </div>
       <div className="table-wrapper">
-        <table className="table">
+        <table className="table admin-orders-table">
         <thead>
           <tr>
             <th>ORDER ID</th>
