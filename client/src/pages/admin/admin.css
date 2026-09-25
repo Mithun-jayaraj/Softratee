@@ -272,14 +272,16 @@
 /* Product Table Grid Layout */
 .admin-products-table,
 .admin-orders-table,
-.admin-users-table {
+.admin-users-table,
+.admin-categories-table {
   display: block;
   min-width: 900px;
 }
 
 .admin-products-table thead, .admin-products-table tbody,
 .admin-orders-table thead, .admin-orders-table tbody,
-.admin-users-table thead, .admin-users-table tbody {
+.admin-users-table thead, .admin-users-table tbody,
+.admin-categories-table thead, .admin-categories-table tbody {
   display: block;
   width: 100%;
 }
@@ -314,15 +316,27 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.admin-categories-table tr {
+  display: grid;
+  grid-template-columns: 120px 2fr 3fr 120px;
+  column-gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+  min-height: 80px;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .admin-products-table tr:last-child,
 .admin-orders-table tr:last-child,
-.admin-users-table tr:last-child {
+.admin-users-table tr:last-child,
+.admin-categories-table tr:last-child {
   border-bottom: none;
 }
 
 .table.admin-products-table th, .table.admin-products-table td,
 .table.admin-orders-table th, .table.admin-orders-table td,
-.table.admin-users-table th, .table.admin-users-table td {
+.table.admin-users-table th, .table.admin-users-table td,
+.table.admin-categories-table th, .table.admin-categories-table td {
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
