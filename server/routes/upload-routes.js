@@ -1,13 +1,8 @@
 const express = require('express');
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../config/cloudinary');
 const { protect, admin } = require('../middleware/auth-middleware');
 const router = express.Router();
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
@@ -38,11 +33,11 @@ router.post('/', protect, admin, upload.single('image'), async (req, res) => {
       imageUrl: result.secure_url,
     });
   } catch (error) {
-    console.error(error);
+    console.error('[Upload Error]:', error);
     if (error.message === 'Not an image! Please upload only images.') {
       return res.status(400).json({ message: error.message });
     }
-    res.status(500).json({ message: 'Error uploading image' });
+    res.status(500).json({ message: error.message || 'Error uploading image', details: error });
   }
 });
 module.exports = router;
