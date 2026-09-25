@@ -286,7 +286,8 @@
 
 .admin-products-table tr {
   display: grid;
-  grid-template-columns: 80px minmax(200px, 1.2fr) minmax(120px, 1fr) 120px 100px 180px minmax(0, 1fr);
+  grid-template-columns: 80px 280px 150px 120px 100px 180px;
+  justify-content: center;
   align-items: center;
   width: 100%;
   min-height: 80px;
@@ -295,7 +296,8 @@
 
 .admin-orders-table tr {
   display: grid;
-  grid-template-columns: 100px minmax(120px, 1fr) minmax(150px, 1.2fr) 60px 100px 100px 120px 120px 140px minmax(0, 1fr);
+  grid-template-columns: 100px 150px 200px 60px 100px 100px 120px 120px 140px;
+  justify-content: center;
   align-items: center;
   width: 100%;
   min-height: 80px;
@@ -304,7 +306,8 @@
 
 .admin-users-table tr {
   display: grid;
-  grid-template-columns: 100px minmax(150px, 1.2fr) minmax(200px, 1.5fr) 100px 180px minmax(0, 1fr);
+  grid-template-columns: 100px 200px 300px 100px 180px;
+  justify-content: center;
   align-items: center;
   width: 100%;
   min-height: 80px;
