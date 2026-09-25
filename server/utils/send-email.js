@@ -24,6 +24,7 @@ const sendEmail = async (options) => {
   });
 
   try {
+    console.log('[Forgot Password] Attempting SMTP connection');
     await transporter.verify();
   } catch (err) {
     console.error('[Forgot Password] SMTP Authentication failed:', err.message);
