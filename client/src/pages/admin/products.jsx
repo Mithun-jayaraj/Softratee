@@ -55,7 +55,7 @@ const Products = () => {
         </button>
       </div>
       <div className="table-wrapper">
-        <table className="table">
+        <table className="table admin-products-table">
         <thead>
           <tr>
             <th>IMAGE</th>
