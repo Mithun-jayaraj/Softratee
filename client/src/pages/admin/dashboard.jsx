@@ -58,7 +58,7 @@ const Dashboard = () => {
             <span className="stat-label">TOTAL SALES</span>
             <TrendingUp size={18} className="stat-icon" />
           </div>
-          <div className="stat-value">₹{totalSales.toFixed(2)}</div>
+          <div className="stat-value" style={{ color: 'var(--color-success)' }}>₹{totalSales.toFixed(2)}</div>
           <div className="stat-caption">All time</div>
         </div>
         <div className="admin-stat-card">
@@ -66,7 +66,7 @@ const Dashboard = () => {
             <span className="stat-label">TOTAL ORDERS</span>
             <Box size={18} className="stat-icon" />
           </div>
-          <div className="stat-value">{totalOrders}</div>
+          <div className="stat-value" style={{ color: 'var(--color-primary)' }}>{totalOrders}</div>
           <div className="stat-caption">All orders</div>
         </div>
         <div className="admin-stat-card">
@@ -74,7 +74,7 @@ const Dashboard = () => {
             <span className="stat-label">PENDING SHIPMENTS</span>
             <Clock size={18} className="stat-icon" />
           </div>
-          <div className="stat-value">{pendingOrders}</div>
+          <div className="stat-value" style={{ color: 'var(--color-warning)' }}>{pendingOrders}</div>
           <div className="stat-caption">Requires attention</div>
         </div>
         <div className="admin-stat-card">
@@ -82,7 +82,7 @@ const Dashboard = () => {
             <span className="stat-label">REGISTERED USERS</span>
             <UserCheck size={18} className="stat-icon" />
           </div>
-          <div className="stat-value">{usersCount}</div>
+          <div className="stat-value" style={{ color: 'var(--color-accent)' }}>{usersCount}</div>
           <div className="stat-caption">Registered customers</div>
         </div>
       </div>
