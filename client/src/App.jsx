@@ -14,6 +14,7 @@ import Cart from "./pages/cart/cart";
 import Checkout from "./pages/checkout/checkout";
 import Payment from "./pages/checkout/payment";
 import Confirmation from "./pages/checkout/confirmation";
+import Orders from "./pages/orders/Orders";
 import Profile from "./pages/profile/profile";
 import OrderDetails from "./pages/orders/order-details";
 import Dashboard from "./pages/admin/dashboard";
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/orders" element={<Orders />} />
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/customizer/:id" element={<Customizer />} />

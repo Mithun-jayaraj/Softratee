@@ -136,6 +136,15 @@ const Navbar = () => {
                 >
                   Profile
                 </Link>
+                {!user.isAdmin && (
+                  <Link
+                    to="/orders"
+                    className="nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Orders
+                  </Link>
+                )}
                 {user.isAdmin && (
                   <Link
                     to="/admin"
