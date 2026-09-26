@@ -329,7 +329,7 @@ const Customizer = () => {
               </div>
             </div>
 
-            <div className="form-group mb-3">
+            <div style={{ marginBottom: '1.5rem' }}>
               <label className="section-label">Text Size</label>
               <div className="slider-row">
                 <input
@@ -344,7 +344,7 @@ const Customizer = () => {
               </div>
             </div>
 
-            <div className="form-group mb-3">
+            <div style={{ marginBottom: '1.5rem' }}>
               <label className="section-label">Text Position</label>
               <div className="slider-row">
                 <span className="slider-label">X</span>
