@@ -24,7 +24,7 @@ const Customizer = () => {
   const [textColor, setTextColor] = useState("#000000");
   const [textSize, setTextSize] = useState(24);
   const [fontFamily, setFontFamily] = useState("Arial, sans-serif");
-  const [showTextPanel, setShowTextPanel] = useState(false);
+  const [showFontMenu, setShowFontMenu] = useState(false);
   const [textPosX, setTextPosX] = useState(50);
   const [textPosY, setTextPosY] = useState(30);
   const [customImage, setCustomImage] = useState(null);
@@ -240,128 +240,140 @@ const Customizer = () => {
             </div>
           </div>
           <div className="control-section">
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <label className="section-label" style={{ marginBottom: 0 }}>Add Text (Optional)</label>
-              <button 
-                type="button" 
-                className="btn-outline" 
-                onClick={() => setShowTextPanel(!showTextPanel)}
-                style={{ padding: '0.25rem 0.75rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #ddd', background: showTextPanel ? '#f3f4f6' : '#fff', cursor: 'pointer' }}
-              >
-                {showTextPanel ? '- Hide Text' : '+ Add Text'}
-              </button>
+            <label className="section-label" style={{ marginBottom: '0.5rem' }}>Add Text (Optional)</label>
+            <div className="form-group mb-3">
+              <input
+                type="text"
+                className="clean-input"
+                placeholder="Enter your text here..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
             </div>
             
-            {showTextPanel && (
-              <div className="text-panel-content" style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #eaeaea' }}>
-                <div className="form-group mb-3">
-                  <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Your Text</label>
+            <div className="form-group mb-3" style={{ position: 'relative' }}>
+              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Font Style</label>
+              <button 
+                type="button" 
+                className="clean-input" 
+                style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', cursor: 'pointer' }}
+                onClick={() => setShowFontMenu(!showFontMenu)}
+              >
+                {fontFamily.split(',')[0].replace(/['"]/g, '')}
+                <span>▼</span>
+              </button>
+              
+              {showFontMenu && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '4px', marginTop: '4px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                  {[
+                    { label: 'Classic', value: 'Georgia, serif' },
+                    { label: 'Modern', value: 'Arial, sans-serif' },
+                    { label: 'Bold', value: 'Impact, Arial Black, sans-serif' },
+                    { label: 'Elegant', value: '"Times New Roman", Times, serif' },
+                    { label: 'Minimal', value: 'Helvetica, sans-serif' },
+                    { label: 'Handwritten', value: 'cursive' },
+                    { label: 'Serif', value: 'serif' },
+                    { label: 'Monospace', value: '"Courier New", Courier, monospace' },
+                  ].map(font => (
+                    <div
+                      key={font.label}
+                      onClick={() => {
+                        setFontFamily(font.value);
+                        setShowFontMenu(false);
+                      }}
+                      style={{ 
+                        padding: '0.75rem 1rem', 
+                        cursor: 'pointer',
+                        fontFamily: font.value,
+                        borderBottom: '1px solid #eee',
+                        backgroundColor: fontFamily === font.value ? '#eff6ff' : 'transparent'
+                      }}
+                      onMouseOver={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                      onMouseOut={(e) => e.target.style.backgroundColor = fontFamily === font.value ? '#eff6ff' : 'transparent'}
+                    >
+                      {font.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="form-group mb-3">
+              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Color</label>
+              <div className="text-color-swatches" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {[
+                  "#000000",
+                  "#ffffff",
+                  "#ef4444",
+                  "#3b82f6",
+                  "#10b981",
+                  "#eab308",
+                  "#f97316",
+                  "#8b5cf6",
+                ].map((c) => (
+                  <div
+                    key={c}
+                    className={`text-color-circle ${textColor === c ? "selected" : ""}`}
+                    style={{ 
+                      backgroundColor: c, 
+                      width: '28px', 
+                      height: '28px', 
+                      borderRadius: '50%', 
+                      cursor: 'pointer', 
+                      border: '1px solid #ddd', 
+                      boxShadow: textColor === c ? `0 0 0 2px #fff, 0 0 0 3px ${c}` : 'none' 
+                    }}
+                    onClick={() => setTextColor(c)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group mb-3">
+              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Size</label>
+              <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <input
+                  type="range"
+                  className="clean-slider"
+                  style={{ flex: 1 }}
+                  min="12"
+                  max="72"
+                  value={textSize}
+                  onChange={(e) => setTextSize(Number(e.target.value))}
+                />
+                <span className="slider-value" style={{ minWidth: '40px', fontSize: '0.9rem' }}>{textSize}px</span>
+              </div>
+            </div>
+
+            <div className="form-group mb-3">
+              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Position</label>
+              <div className="position-controls">
+                <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+                  <span className="slider-label" style={{ width: '15px' }}>X</span>
                   <input
-                    type="text"
-                    className="clean-input"
-                    placeholder="Enter your text................"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    type="range"
+                    className="clean-slider"
+                    style={{ flex: 1 }}
+                    min="0"
+                    max="100"
+                    value={textPosX}
+                    onChange={(e) => setTextPosX(Number(e.target.value))}
                   />
                 </div>
-                
-                <div className="form-group mb-3">
-                  <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Font Style</label>
-                  <div className="font-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    {[
-                      { label: 'Classic', value: 'Georgia, serif' },
-                      { label: 'Modern', value: 'Arial, sans-serif' },
-                      { label: 'Bold', value: 'Impact, Arial Black, sans-serif' },
-                      { label: 'Elegant', value: '"Times New Roman", Times, serif' },
-                      { label: 'Handwritten', value: 'cursive' },
-                      { label: 'Vintage', value: '"Courier New", Courier, monospace' },
-                    ].map(font => (
-                      <button
-                        key={font.label}
-                        className={`font-btn ${fontFamily === font.value ? 'selected' : ''}`}
-                        onClick={() => setFontFamily(font.value)}
-                        style={{ 
-                          padding: '0.5rem', 
-                          border: `1px solid ${fontFamily === font.value ? '#2563EB' : '#ddd'}`, 
-                          background: fontFamily === font.value ? '#eff6ff' : '#fff',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontFamily: font.value,
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {font.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span className="slider-label" style={{ width: '15px' }}>Y</span>
+                  <input
+                    type="range"
+                    className="clean-slider"
+                    style={{ flex: 1 }}
+                    min="0"
+                    max="100"
+                    value={textPosY}
+                    onChange={(e) => setTextPosY(Number(e.target.value))}
+                  />
                 </div>
-
-                <div className="two-col-grid mt-3">
-                  <div className="grid-col">
-                    <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Color</label>
-                    <div className="text-color-swatches">
-                      {[
-                        "#000000",
-                        "#ffffff",
-                        "#ef4444",
-                        "#3b82f6",
-                        "#10b981",
-                        "#eab308",
-                        "#f97316",
-                        "#8b5cf6",
-                      ].map((c) => (
-                        <div
-                          key={c}
-                          className={`text-color-circle ${textColor === c ? "selected" : ""}`}
-                          style={{ backgroundColor: c, width: '24px', height: '24px', borderRadius: '50%', cursor: 'pointer', border: '1px solid #ddd' }}
-                          onClick={() => setTextColor(c)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid-col">
-                    <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Size</label>
-                    <div className="slider-row">
-                      <input
-                        type="range"
-                        className="clean-slider"
-                        min="12"
-                        max="72"
-                        value={textSize}
-                        onChange={(e) => setTextSize(Number(e.target.value))}
-                      />
-                      <span className="slider-value">{textSize}px</span>
-                    </div>
-                  </div>
-                </div>
-                {text && (
-                  <div className="position-controls mt-3">
-                    <div className="slider-row">
-                      <span className="slider-label">X</span>
-                      <input
-                        type="range"
-                        className="clean-slider"
-                        min="0"
-                        max="100"
-                        value={textPosX}
-                        onChange={(e) => setTextPosX(Number(e.target.value))}
-                      />
-                    </div>
-                    <div className="slider-row">
-                      <span className="slider-label">Y</span>
-                      <input
-                        type="range"
-                        className="clean-slider"
-                        min="0"
-                        max="100"
-                        value={textPosY}
-                        onChange={(e) => setTextPosY(Number(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
+            </div>
           </div>
           <div className="control-section">
             <div className="two-col-grid">
