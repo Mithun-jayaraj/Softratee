@@ -4,16 +4,11 @@ dns.setDefaultResultOrder('ipv4first');
 
 const sendEmail = async (options) => {
   const host = process.env.SMTP_HOST;
-  let port = process.env.SMTP_PORT;
+  const port = process.env.SMTP_PORT;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASSWORD;
   const fromEmail = process.env.SMTP_FROM_EMAIL;
   const fromName = process.env.SMTP_FROM_NAME || 'SoftraTees';
-
-  // Render often times out on port 465. Force port 587 (STARTTLS) for Gmail.
-  if (host === 'smtp.gmail.com' && Number(port) === 465) {
-    port = 587;
-  }
 
   if (!host || !port || !user || !pass || !fromEmail) {
     console.error('[Forgot Password] Missing required SMTP environment variables.');
@@ -23,15 +18,12 @@ const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: host,
     port: Number(port),
-    secure: Number(port) === 465, // false for 587, which enables STARTTLS
+    secure: Number(port) === 465,
     auth: {
       user: user,
       pass: pass,
     },
-    tls: {
-      rejectUnauthorized: false
-    },
-    // Force IPv4 according to prompt instructions
+    // Force IPv4 if needed
     family: 4,
     dns: {
       family: 4
