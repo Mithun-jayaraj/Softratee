@@ -10,7 +10,7 @@ const sendEmail = async (options) => {
     throw new Error('Email configuration missing.');
   }
 
-  const client = new BrevoClient(apiKey);
+  const client = new BrevoClient({ apiKey: apiKey });
 
   console.log(`[Forgot Password] Brevo configuration detected for: ${fromEmail}`);
 
