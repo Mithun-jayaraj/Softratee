@@ -330,48 +330,43 @@ const Customizer = () => {
             </div>
 
             <div className="form-group mb-3">
-              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Size</label>
-              <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <label className="section-label">Text Size</label>
+              <div className="slider-row">
                 <input
                   type="range"
                   className="clean-slider"
-                  style={{ flex: 1 }}
                   min="12"
                   max="72"
                   value={textSize}
                   onChange={(e) => setTextSize(Number(e.target.value))}
                 />
-                <span className="slider-value" style={{ minWidth: '40px', fontSize: '0.9rem' }}>{textSize}px</span>
+                <span className="slider-value" style={{ marginLeft: '10px' }}>{textSize}px</span>
               </div>
             </div>
 
             <div className="form-group mb-3">
-              <label className="section-label" style={{ fontSize: '0.9rem', color: '#555' }}>Text Position</label>
-              <div className="position-controls">
-                <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
-                  <span className="slider-label" style={{ width: '15px' }}>X</span>
-                  <input
-                    type="range"
-                    className="clean-slider"
-                    style={{ flex: 1 }}
-                    min="0"
-                    max="100"
-                    value={textPosX}
-                    onChange={(e) => setTextPosX(Number(e.target.value))}
-                  />
-                </div>
-                <div className="slider-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span className="slider-label" style={{ width: '15px' }}>Y</span>
-                  <input
-                    type="range"
-                    className="clean-slider"
-                    style={{ flex: 1 }}
-                    min="0"
-                    max="100"
-                    value={textPosY}
-                    onChange={(e) => setTextPosY(Number(e.target.value))}
-                  />
-                </div>
+              <label className="section-label">Text Position</label>
+              <div className="slider-row">
+                <span className="slider-label">X</span>
+                <input
+                  type="range"
+                  className="clean-slider"
+                  min="0"
+                  max="100"
+                  value={textPosX}
+                  onChange={(e) => setTextPosX(Number(e.target.value))}
+                />
+              </div>
+              <div className="slider-row">
+                <span className="slider-label">Y</span>
+                <input
+                  type="range"
+                  className="clean-slider"
+                  min="0"
+                  max="100"
+                  value={textPosY}
+                  onChange={(e) => setTextPosY(Number(e.target.value))}
+                />
               </div>
             </div>
           </div>
