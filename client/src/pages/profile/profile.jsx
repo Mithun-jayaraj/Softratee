@@ -6,9 +6,6 @@ import './profile.css';
 const Profile = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const [errorOrders, setErrorOrders] = useState(null);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
@@ -16,6 +13,7 @@ const Profile = () => {
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
   const [updateMessage, setUpdateMessage] = useState({ text: '', type: '' });
+  
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -27,17 +25,6 @@ const Profile = () => {
         setPostalCode(user.defaultAddress.postalCode || '');
         setCountry(user.defaultAddress.country || '');
       }
-      const fetchMyOrders = async () => {
-        try {
-          const { data } = await api.get('/orders/myorders');
-          setOrders(data);
-          setLoadingOrders(false);
-        } catch (err) {
-          setErrorOrders('Failed to fetch orders');
-          setLoadingOrders(false);
-        }
-      };
-      fetchMyOrders();
     }
   }, [user, navigate]);
   const submitHandler = async (e) => {
@@ -65,8 +52,9 @@ const Profile = () => {
   if (!user) return null;
   return (
     <div className="profile-page">
-      <div className="profile-container">
-        <div className="profile-sidebar">
+      <div className="container" style={{ padding: '2rem 1rem', maxWidth: '600px', margin: '0 auto' }}>
+        <h2 className="mb-3" style={{ fontSize: '24px', fontWeight: 'bold' }}>PROFILE</h2>
+        <div className="profile-content">
           {updateMessage.text && (
             <div style={{ padding: '1rem', borderRadius: '8px', backgroundColor: updateMessage.type === 'error' ? 'var(--color-error-bg)' : 'var(--color-success-bg)', color: updateMessage.type === 'error' ? 'var(--color-error)' : 'var(--color-success)', marginBottom: '1rem' }}>
               {updateMessage.text}
@@ -121,73 +109,6 @@ const Profile = () => {
             </div>
           )}
         </div>
-        {!user.isAdmin && (
-          <div className="profile-orders">
-            <h2 className="mb-3">My Orders</h2>
-            {loadingOrders ? (
-              <div className="text-muted">Loading orders...</div>
-            ) : errorOrders ? (
-              <div className="text-danger">{errorOrders}</div>
-            ) : orders.length === 0 ? (
-              <div className="empty-orders-state">
-                <h3>No orders yet</h3>
-                <p>You haven't placed an order yet. Browse our collection!</p>
-                <Link to="/products" className="btn btn-primary mt-3">Start Shopping</Link>
-              </div>
-            ) : (
-              <div>
-                {orders.map((order) => {
-                  let status = order.orderStatus;
-                  if (!status) {
-                    if (order.isDelivered) status = 'Delivered';
-                    else status = 'Placed';
-                  }
-                  if (status === 'Payment Confirmed') {
-                    status = 'Placed';
-                  }
-                  let badgeClass = 'badge-neutral';
-                  if (status === 'Processing' || status === 'Placed') badgeClass = 'badge-pending';
-                  else if (status === 'Shipped' || status === 'Out for Delivery') badgeClass = 'badge-pending';
-                  else if (status === 'Delivered') badgeClass = 'badge-success';
-                  else if (status === 'Cancelled') badgeClass = 'badge-error';
-                  return (
-                    <div key={order._id} className="order-card">
-                      <div className="order-card-header">
-                        <div className="order-id-date">
-                          <strong>Order #{order._id.substring(0, 8).toUpperCase()}</strong>
-                          <span>Placed on {new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <span className={`badge ${badgeClass}`}>{status}</span>
-                          {order.isPaid || order.paymentStatus === 'Paid' ? (
-                            <span className="badge badge-success">Paid</span>
-                          ) : (
-                            <span className="badge badge-neutral">Payment Pending</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="order-card-body">
-                        <div>
-                          <p className="text-muted mb-1" style={{ fontSize: '0.9rem' }}>
-                            {order.orderItems.length} {order.orderItems.length === 1 ? 'Item' : 'Items'}
-                          </p>
-                          <div className="order-card-total">₹{order.totalPrice.toFixed(2)}</div>
-                        </div>
-                        <div className="d-flex gap-2">
-                          {(!order.isPaid && order.paymentStatus !== 'Paid') ? (
-                            <Link to={`/payment/${order._id}`} className="btn btn-primary">Complete Payment</Link>
-                          ) : (
-                            <Link to={`/order/${order._id}`} className="btn btn-light">Track Order</Link>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
