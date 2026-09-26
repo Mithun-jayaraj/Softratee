@@ -1,4 +1,4 @@
-const brevo = require('@getbrevo/brevo');
+const { BrevoClient } = require('@getbrevo/brevo');
 
 const sendEmail = async (options) => {
   const apiKey = process.env.BREVO_API_KEY;
@@ -10,28 +10,25 @@ const sendEmail = async (options) => {
     throw new Error('Email configuration missing.');
   }
 
-  const apiInstance = new brevo.TransactionalEmailsApi();
-  // Set the API key
-  const apiKeyObj = apiInstance.authentications['apiKey'];
-  apiKeyObj.apiKey = apiKey;
+  const client = new BrevoClient(apiKey);
 
   console.log(`[Forgot Password] Brevo configuration detected for: ${fromEmail}`);
 
-  const sendSmtpEmail = new brevo.SendSmtpEmail();
-  
-  sendSmtpEmail.subject = options.subject;
-  sendSmtpEmail.htmlContent = options.html;
+  const emailData = {
+    subject: options.subject,
+    htmlContent: options.html,
+    sender: { name: fromName, email: fromEmail },
+    to: [{ email: options.email }]
+  };
+
   if (options.message) {
-    sendSmtpEmail.textContent = options.message;
+    emailData.textContent = options.message;
   }
-  
-  sendSmtpEmail.sender = { name: fromName, email: fromEmail };
-  sendSmtpEmail.to = [{ email: options.email }];
 
   console.log('[Forgot Password] Sending OTP email via Brevo API');
   
   try {
-    const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    const data = await client.transactionalEmails.sendTransacEmail(emailData);
     console.log('[Forgot Password] OTP email sent successfully. Message ID:', data.messageId);
     console.log('[Forgot Password] Email sent successfully');
   } catch (error) {
