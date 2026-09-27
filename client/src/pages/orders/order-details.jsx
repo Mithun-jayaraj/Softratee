@@ -33,6 +33,7 @@ const OrderDetails = () => {
     const [updateStatus, setUpdateStatus] = useState(initialStatus);
     const [trackingNumber, setTrackingNumber] = useState(order.trackingNumber || '');
     const [carrier, setCarrier] = useState(order.carrier || '');
+    const [paymentStatus, setPaymentStatus] = useState(order.paymentStatus || 'Pending');
     const deliveryStatuses = ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
     let currentDeliveryStatus = initialStatus;
     if (!order.orderStatus) {
@@ -91,7 +92,8 @@ const OrderDetails = () => {
         await api.put(`/orders/${order._id}/status`, {
           status: updateStatus,
           trackingNumber: updateStatus === 'Shipped' ? trackingNumber : undefined,
-          carrier: updateStatus === 'Shipped' ? carrier : undefined
+          carrier: updateStatus === 'Shipped' ? carrier : undefined,
+          paymentStatus: paymentStatus
         });
         fetchOrder();
       } catch (err) {
@@ -132,13 +134,23 @@ const OrderDetails = () => {
         {user.isAdmin && (
            <div className="admin-status-update">
               <h5>Admin Control Panel</h5>
-              <div className="form-group">
+              <div className="form-group mb-2">
+                <label style={{fontSize: '0.85rem', marginBottom: '4px'}}>Delivery Status</label>
                 <select value={updateStatus} onChange={e => setUpdateStatus(e.target.value)} className="form-control">
                    {deliveryStatuses.concat(['Cancelled']).map(s => (
                      <option key={s} value={s}>{s}</option>
                    ))}
                 </select>
               </div>
+              {order.paymentMethod === 'COD' && (
+                <div className="form-group mb-2">
+                  <label style={{fontSize: '0.85rem', marginBottom: '4px'}}>Payment Status (COD)</label>
+                  <select value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)} className="form-control">
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                  </select>
+                </div>
+              )}
               {updateStatus === 'Shipped' && (
                  <>
                    <div className="form-group">
@@ -228,7 +240,7 @@ const OrderDetails = () => {
             <span>Total:</span>
             <span>₹{order.totalPrice.toFixed(2)}</span>
           </div>
-          {!order.isPaid && (
+          {!order.isPaid && order.paymentMethod !== 'COD' && (
             <Link to={`/payment/${order._id}`} className="btn btn-primary btn-block" style={{ textAlign: 'center', display: 'block' }}>
               Complete Payment
             </Link>

@@ -24,7 +24,7 @@ const Payment = () => {
     const fetchOrder = async () => {
       try {
         const { data } = await api.get(`/orders/${id}`);
-        if (data.isPaid || data.paymentStatus === 'Paid') {
+        if (data.isPaid || data.paymentStatus === 'Paid' || data.paymentMethod === 'COD') {
           navigate(`/order/${id}/confirmation`);
           return;
         }

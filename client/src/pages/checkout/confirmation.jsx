@@ -34,11 +34,13 @@ const Confirmation = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error">{error}</div>;
   const isPaid = order.isPaid || order.paymentStatus === 'Paid';
+  const isCOD = order.paymentMethod === 'COD';
+  const isOrderConfirmed = isPaid || isCOD;
   return (
     <div className="confirmation-page">
       <div className="confirmation-card">
         <div className="confirmation-icon">
-          {isPaid ? (
+          {isOrderConfirmed ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
@@ -51,10 +53,10 @@ const Confirmation = () => {
             </svg>
           )}
         </div>
-        {isPaid ? (
+        {isOrderConfirmed ? (
           <>
-            <h2>Payment Successful</h2>
-            <h3>Order Confirmed!</h3>
+            <h2>Order Confirmed!</h2>
+            <h3>{isPaid ? 'Payment Successful' : 'Cash on Delivery'}</h3>
           </>
         ) : (
           <>
@@ -63,7 +65,7 @@ const Confirmation = () => {
           </>
         )}
         <p className="confirmation-message">
-          Your order <strong>#{order._id.substring(0, 8).toUpperCase()}</strong> has been {isPaid ? 'placed successfully' : 'saved'}.
+          Your order <strong>#{order._id.substring(0, 8).toUpperCase()}</strong> has been {isOrderConfirmed ? 'placed successfully' : 'saved'}.
         </p>
         <div className="confirmation-details">
           <div className="detail-row">
@@ -82,7 +84,7 @@ const Confirmation = () => {
           </div>
         </div>
         <div className="confirmation-actions">
-          {isPaid ? (
+          {isOrderConfirmed ? (
             <>
               <Link to={`/order/${order._id}`} className="btn btn-primary">Track Order</Link>
               <Link to="/products" className="btn btn-outline">Continue Shopping</Link>

@@ -54,6 +54,8 @@ const Checkout = () => {
   const shippingPrice = discountedSubtotal > 100 ? 0 : 10;
   const taxPrice = 0.15 * discountedSubtotal;
   const totalPrice = discountedSubtotal + shippingPrice + taxPrice;
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState('Razorpay');
+
   const applyCouponHandler = async () => {
     setCouponError('');
     setCouponSuccess('');
@@ -77,8 +79,17 @@ const Checkout = () => {
     setCouponError('');
   };
   const placeOrderHandler = async () => {
+    if (!address || !city || !postalCode || !country) {
+      alert('Please provide a complete delivery address.');
+      return;
+    }
+    if (cartItems.length === 0) {
+      alert('Your cart is empty.');
+      return;
+    }
+
     saveShippingAddress({ address, city, postalCode, country });
-    savePaymentMethod('Razorpay');
+    savePaymentMethod(paymentMethodChoice);
     try {
       const orderItems = cartItems.map(item => ({
         name: item.name,
@@ -93,12 +104,16 @@ const Checkout = () => {
       const { data } = await api.post('/orders', {
         orderItems,
         shippingAddress: { address, city, postalCode, country },
-        paymentMethod: 'Razorpay',
+        paymentMethod: paymentMethodChoice,
         couponCode: appliedCoupon?.code, 
       });
       setIsOrderPlaced(true);
       clearCart();
-      navigate(`/payment/${data._id}`);
+      if (paymentMethodChoice === 'COD') {
+        navigate(`/order/${data._id}/confirmation`);
+      } else {
+        navigate(`/payment/${data._id}`);
+      }
     } catch (err) {
       alert(err.response?.data?.message || 'Order failed');
     }
@@ -172,11 +187,27 @@ const Checkout = () => {
           </div>
           <div className="card mb-4">
              <h3 className="mb-3" style={{ fontSize: '1.25rem', color: 'var(--color-primary)' }}>3. Payment Method</h3>
-             <div style={{ padding: '1rem', border: '1px solid var(--color-accent)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--color-accent)', border: '4px solid white', boxShadow: '0 0 0 1px var(--color-accent)' }}></div>
-                <strong>Razorpay (Credit Card, UPI, NetBanking)</strong>
+             <div 
+               style={{ padding: '1rem', border: `1px solid ${paymentMethodChoice === 'Razorpay' ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', marginBottom: '1rem' }}
+               onClick={() => setPaymentMethodChoice('Razorpay')}
+             >
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: paymentMethodChoice === 'Razorpay' ? 'var(--color-accent)' : 'transparent', border: paymentMethodChoice === 'Razorpay' ? '4px solid white' : '1px solid #ccc', boxShadow: paymentMethodChoice === 'Razorpay' ? '0 0 0 1px var(--color-accent)' : 'none' }}></div>
+                <div>
+                  <strong>Online Payment</strong>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>Pay securely using Razorpay (Credit Card, UPI, NetBanking)</p>
+                </div>
              </div>
-             <p className="text-muted mt-2" style={{ fontSize: '0.85rem' }}>You will be redirected to the secure Razorpay payment gateway after clicking "Place Order".</p>
+             
+             <div 
+               style={{ padding: '1rem', border: `1px solid ${paymentMethodChoice === 'COD' ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-bg)', display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+               onClick={() => setPaymentMethodChoice('COD')}
+             >
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: paymentMethodChoice === 'COD' ? 'var(--color-accent)' : 'transparent', border: paymentMethodChoice === 'COD' ? '4px solid white' : '1px solid #ccc', boxShadow: paymentMethodChoice === 'COD' ? '0 0 0 1px var(--color-accent)' : 'none' }}></div>
+                <div>
+                  <strong>Cash on Delivery (COD)</strong>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>Pay when your order is delivered to your doorstep</p>
+                </div>
+             </div>
           </div>
         </div>
         <div>
@@ -219,7 +250,7 @@ const Checkout = () => {
               </div>
             </div>
             <button className="btn btn-primary btn-block mt-4" onClick={placeOrderHandler}>
-              Place Order & Pay
+              {paymentMethodChoice === 'COD' ? 'Place Order' : 'Place Order & Pay'}
             </button>
           </div>
         </div>

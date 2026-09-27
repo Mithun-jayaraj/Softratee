@@ -66,6 +66,13 @@ const addOrderItems = async (req, res) => {
       statusHistory: [{ status: 'Placed' }]
     });
     const createdOrder = await order.save();
+
+    if (paymentMethod === 'COD') {
+      for (const item of verifiedOrderItems) {
+        await Product.updateOne({ _id: item.product }, { $inc: { countInStock: -item.qty } });
+      }
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error(error);
@@ -162,7 +169,7 @@ const updateOrderToDelivered = async (req, res) => {
 };
 const updateOrderStatus = async (req, res) => {
   try {
-    const { status, trackingNumber, carrier } = req.body;
+    const { status, trackingNumber, carrier, paymentStatus } = req.body;
     const validStatuses = ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
@@ -179,6 +186,18 @@ const updateOrderStatus = async (req, res) => {
       if (status === 'Delivered') {
         order.isDelivered = true;
         order.deliveredAt = Date.now();
+      }
+      if (paymentStatus && order.paymentMethod === 'COD') {
+        order.paymentStatus = paymentStatus;
+        if (paymentStatus === 'Paid') {
+          order.isPaid = true;
+          if (!order.paidAt) {
+             order.paidAt = Date.now();
+             order.statusHistory.push({ status: 'Paid', date: Date.now() });
+          }
+        } else {
+          order.isPaid = false;
+        }
       }
       const updatedOrder = await order.save();
       res.json(updatedOrder);
