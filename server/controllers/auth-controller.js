@@ -15,6 +15,7 @@ const authUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        mobileNumber: user.mobileNumber,
         isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
@@ -52,6 +53,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        mobileNumber: user.mobileNumber,
         isAdmin: user.isAdmin,
         token: generateToken(user._id),
       });
@@ -70,6 +72,7 @@ const getUserProfile = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        mobileNumber: user.mobileNumber,
         isAdmin: user.isAdmin,
       });
     } else {
@@ -84,6 +87,13 @@ const updateUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (user) {
       user.name = req.body.name || user.name;
+      if (req.body.mobileNumber !== undefined) {
+        const trimmedMobile = req.body.mobileNumber.trim();
+        if (trimmedMobile && !/^\d{10}$/.test(trimmedMobile)) {
+          return res.status(400).json({ message: 'Invalid mobile number format' });
+        }
+        user.mobileNumber = trimmedMobile;
+      }
       if (req.body.password) {
         user.password = req.body.password;
       }
@@ -102,6 +112,7 @@ const updateUserProfile = async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        mobileNumber: updatedUser.mobileNumber,
         isAdmin: updatedUser.isAdmin,
         defaultAddress: updatedUser.defaultAddress,
         token: generateToken(updatedUser._id),
@@ -153,12 +164,20 @@ const updateUser = async (req, res) => {
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
+      if (req.body.mobileNumber !== undefined) {
+        const trimmedMobile = req.body.mobileNumber.trim();
+        if (trimmedMobile && !/^\d{10}$/.test(trimmedMobile)) {
+          return res.status(400).json({ message: 'Invalid mobile number format' });
+        }
+        user.mobileNumber = trimmedMobile;
+      }
       user.isAdmin = req.body.isAdmin !== undefined ? req.body.isAdmin : user.isAdmin;
       const updatedUser = await user.save();
       res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        mobileNumber: updatedUser.mobileNumber,
         isAdmin: updatedUser.isAdmin,
       });
     } else {

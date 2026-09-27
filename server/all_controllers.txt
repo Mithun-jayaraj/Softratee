@@ -1,0 +1,921 @@
+﻿const User = require('../models/user');
+const generateToken = require('../utils/generate-token');
+const crypto = require('crypto');
+const sendEmail = require('../utils/send-email');
+
+const otpStorage = {};
+const passwordResetStorage = {};
+
+const authUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (user && (await user.matchPassword(password))) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+const registerUser = async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+    const user = await User.create({
+      name,
+      email,
+      password,
+    });
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.name = req.body.name || user.name;
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+      if (req.body.defaultAddress) {
+        if (!user.defaultAddress) {
+          user.defaultAddress = {};
+        }
+        user.defaultAddress.address = req.body.defaultAddress.address;
+        user.defaultAddress.city = req.body.defaultAddress.city;
+        user.defaultAddress.postalCode = req.body.defaultAddress.postalCode;
+        user.defaultAddress.country = req.body.defaultAddress.country;
+        user.markModified('defaultAddress');
+      }
+      const updatedUser = await user.save();
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+        defaultAddress: updatedUser.defaultAddress,
+        token: generateToken(updatedUser._id),
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Profile Update Error:', error);
+    res.status(500).json({ message: 'Server error updating profile' });
+  }
+};
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching users' });
+  }
+};
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      await User.deleteOne({ _id: user._id });
+      res.json({ message: 'User removed' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting user' });
+  }
+};
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching user' });
+  }
+};
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      user.isAdmin = req.body.isAdmin !== undefined ? req.body.isAdmin : user.isAdmin;
+      const updatedUser = await user.save();
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating user' });
+  }
+};
+const generateOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log('[Forgot Password] Request received');
+    const user = await User.findOne({ email });
+    console.log('[Forgot Password] User lookup completed');
+
+    if (!user) {
+      return res.status(200).json({ message: 'If that email is registered, an OTP was sent.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('[Forgot Password] OTP generated');
+
+    otpStorage[email] = {
+      otp,
+      expiresAt: Date.now() + 10 * 60 * 1000
+    };
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2>Hello,</h2>
+        <p>We received a request to reset your SoftraTees password.</p>
+        <p>Your OTP is: <strong>${otp}</strong></p>
+        <p>This OTP is valid for 10 minutes. Do not share the OTP with anyone.</p>
+        <p>If you did not request this password reset, you can safely ignore this email.</p>
+      </div>
+    `;
+
+    try {
+      console.log('[Forgot Password] Sending OTP email');
+      await sendEmail({
+        email: user.email,
+        subject: 'SoftraTees Password Reset OTP',
+        html: htmlContent,
+      });
+      console.log('[Forgot Password] OTP email sent successfully');
+      res.status(200).json({ message: 'If that email is registered, an OTP was sent.' });
+    } catch (err) {
+      console.error('[Forgot Password] Email sending failed:', err.message);
+      delete otpStorage[email];
+      
+      if (err.message.includes('configuration error')) {
+        return res.status(500).json({ message: err.message });
+      }
+      return res.status(500).json({ message: 'Email could not be sent. Please try again later.' });
+    }
+  } catch (error) {
+    console.error('[Forgot Password] Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    if (!otpStorage[email]) {
+      return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+
+    if (Date.now() > otpStorage[email].expiresAt) {
+      delete otpStorage[email];
+      return res.status(400).json({ message: 'OTP expired. Please request a new OTP.' });
+    }
+
+    if (otpStorage[email].otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+
+    delete otpStorage[email];
+    console.log('[Forgot Password] OTP verification successful');
+
+    passwordResetStorage[email] = {
+      verified: true,
+      expiresAt: Date.now() + 10 * 60 * 1000
+    };
+
+    res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('[Forgot Password] Verify OTP Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!passwordResetStorage[email] || !passwordResetStorage[email].verified) {
+      return res.status(400).json({ message: 'Unauthorized. Please verify OTP first.' });
+    }
+
+    if (Date.now() > passwordResetStorage[email].expiresAt) {
+      delete passwordResetStorage[email];
+      return res.status(400).json({ message: 'Session expired. Please start over.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found.' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    delete passwordResetStorage[email];
+    console.log('[Forgot Password] Password reset successful');
+
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error('[Forgot Password] Reset Password Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = {
+  authUser,
+  registerUser,
+  getUserProfile,
+  updateUserProfile,
+  getUsers,
+  deleteUser,
+  getUserById,
+  updateUser,
+  generateOtp,
+  verifyOtp,
+  resetPassword,
+};
+const Banner = require('../models/banner');
+const getBanners = async (req, res) => {
+  try {
+    const banners = await Banner.find({});
+    res.json(banners);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching banners' });
+  }
+};
+const createBanner = async (req, res) => {
+  const { title, imageUrl, isActive } = req.body;
+  try {
+    const banner = new Banner({ title, imageUrl, isActive });
+    const createdBanner = await banner.save();
+    res.status(201).json(createdBanner);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating banner' });
+  }
+};
+const updateBanner = async (req, res) => {
+  const { title, imageUrl, isActive } = req.body;
+  try {
+    const banner = await Banner.findById(req.params.id);
+    if (banner) {
+      banner.title = title || banner.title;
+      banner.imageUrl = imageUrl || banner.imageUrl;
+      banner.isActive = isActive !== undefined ? isActive : banner.isActive;
+      const updatedBanner = await banner.save();
+      res.json(updatedBanner);
+    } else {
+      res.status(404).json({ message: 'Banner not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating banner' });
+  }
+};
+const deleteBanner = async (req, res) => {
+  try {
+    const banner = await Banner.findById(req.params.id);
+    if (banner) {
+      await Banner.deleteOne({ _id: banner._id });
+      res.json({ message: 'Banner removed' });
+    } else {
+      res.status(404).json({ message: 'Banner not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting banner' });
+  }
+};
+module.exports = {
+  getBanners,
+  createBanner,
+  updateBanner,
+  deleteBanner,
+};
+const Category = require('../models/category');
+const getCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({});
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching categories' });
+  }
+};
+const createCategory = async (req, res) => {
+  const { name, description } = req.body;
+  try {
+    const categoryExists = await Category.findOne({ name });
+    if (categoryExists) {
+      return res.status(400).json({ message: 'Category already exists' });
+    }
+    const category = new Category({ name, description });
+    const createdCategory = await category.save();
+    res.status(201).json(createdCategory);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating category' });
+  }
+};
+const deleteCategory = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (category) {
+      await Category.deleteOne({ _id: category._id });
+      res.json({ message: 'Category removed' });
+    } else {
+      res.status(404).json({ message: 'Category not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting category' });
+  }
+};
+module.exports = {
+  getCategories,
+  createCategory,
+  deleteCategory,
+};
+const Coupon = require('../models/coupon');
+const getCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find({});
+    res.json(coupons);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching coupons' });
+  }
+};
+const getAvailableCoupons = async (req, res) => {
+  try {
+    const now = new Date();
+    const coupons = await Coupon.find({
+      isActive: true,
+      expiryDate: { $gt: now }
+    }).select('code discountPercent expiryDate'); 
+    res.json(coupons);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching available coupons' });
+  }
+};
+const createCoupon = async (req, res) => {
+  const { code, discountPercent, expiryDate } = req.body;
+  try {
+    const couponExists = await Coupon.findOne({ code });
+    if (couponExists) {
+      return res.status(400).json({ message: 'Coupon already exists' });
+    }
+    const coupon = new Coupon({ 
+      code, 
+      discountPercent, 
+      expiryDate: expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) 
+    });
+    const createdCoupon = await coupon.save();
+    res.status(201).json(createdCoupon);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating coupon' });
+  }
+};
+const deleteCoupon = async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (coupon) {
+      await Coupon.deleteOne({ _id: coupon._id });
+      res.json({ message: 'Coupon removed' });
+    } else {
+      res.status(404).json({ message: 'Coupon not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting coupon' });
+  }
+};
+const verifyCoupon = async (req, res) => {
+  const { code } = req.body;
+  try {
+    const coupon = await Coupon.findOne({ code });
+    if (coupon && coupon.isActive && new Date(coupon.expiryDate) > new Date()) {
+      res.json(coupon);
+    } else {
+      res.status(404).json({ message: 'Invalid or expired coupon' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error verifying coupon' });
+  }
+};
+module.exports = {
+  getCoupons,
+  getAvailableCoupons,
+  createCoupon,
+  deleteCoupon,
+  verifyCoupon,
+};
+const Design = require('../models/design');
+const getDesigns = async (req, res) => {
+  try {
+    const designs = await Design.find({});
+    res.json(designs);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching designs' });
+  }
+};
+const createDesign = async (req, res) => {
+  const { name, imageUrl } = req.body;
+  try {
+    const design = new Design({ name, imageUrl });
+    const createdDesign = await design.save();
+    res.status(201).json(createdDesign);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating design' });
+  }
+};
+const deleteDesign = async (req, res) => {
+  try {
+    const design = await Design.findById(req.params.id);
+    if (design) {
+      await Design.deleteOne({ _id: design._id });
+      res.json({ message: 'Design removed' });
+    } else {
+      res.status(404).json({ message: 'Design not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting design' });
+  }
+};
+module.exports = {
+  getDesigns,
+  createDesign,
+  deleteDesign,
+};
+const Order = require('../models/order');
+const Product = require('../models/product');
+const Coupon = require('../models/coupon');
+const addOrderItems = async (req, res) => {
+  const {
+    orderItems,
+    shippingAddress,
+    paymentMethod,
+    couponCode
+  } = req.body;
+  if (orderItems && orderItems.length === 0) {
+    return res.status(400).json({ message: 'No order items' });
+  }
+  try {
+    let calculatedItemsPrice = 0;
+    const verifiedOrderItems = [];
+    const mongoose = require('mongoose');
+    for (const item of orderItems) {
+      if (!item.product || !mongoose.Types.ObjectId.isValid(item.product)) {
+        return res.status(400).json({ message: `Invalid product ID for item: ${item.name}. Please refresh your cart.` });
+      }
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({ message: `Product not found: ${item.name}. Please refresh your cart.` });
+      }
+      if (product.countInStock < item.qty) {
+        return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
+      }
+      let itemPrice = product.price;
+      calculatedItemsPrice += itemPrice * item.qty;
+      verifiedOrderItems.push({
+        ...item,
+        price: itemPrice 
+      });
+    }
+    let discountPercent = 0;
+    let appliedCouponCode = null;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode });
+      if (coupon && coupon.isActive && new Date(coupon.expiryDate) > new Date()) {
+        discountPercent = coupon.discountPercent;
+        appliedCouponCode = coupon.code;
+      }
+    }
+    let discountAmount = 0;
+    if (discountPercent > 0) {
+      discountAmount = calculatedItemsPrice * (discountPercent / 100);
+    }
+    const discountedSubtotal = calculatedItemsPrice - discountAmount;
+    const taxPrice = 0.15 * discountedSubtotal;
+    const shippingPrice = discountedSubtotal > 100 ? 0 : 10;
+    const totalPrice = discountedSubtotal + taxPrice + shippingPrice;
+    const order = new Order({
+      orderItems: verifiedOrderItems,
+      user: req.user._id,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice: calculatedItemsPrice, 
+      couponCode: appliedCouponCode,
+      discountAmount: discountAmount,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      paymentStatus: 'Pending',
+      orderStatus: 'Placed',
+      statusHistory: [{ status: 'Placed' }]
+    });
+    const createdOrder = await order.save();
+    res.status(201).json(createdOrder);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: `Error creating order: ${error.message}` });
+  }
+};
+const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate(
+      'user',
+      'name email'
+    );
+    if (order) {
+      if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+         res.status(401).json({ message: 'Not authorized to view this order' });
+         return;
+      }
+      res.json(order);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching order' });
+  }
+};
+const updateOrderToPaid = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      for (const item of order.orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          if (product.countInStock < item.qty) {
+             return res.status(400).json({ message: `Insufficient stock for ${product.name} to complete order.` });
+          }
+          await Product.updateOne({ _id: product._id }, { $inc: { countInStock: -item.qty } });
+        }
+      }
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentStatus = 'Paid';
+      order.statusHistory.push({ status: 'Paid', date: Date.now() });
+      if (req.body.paymentMethod) {
+        order.paymentMethod = req.body.paymentMethod;
+      }
+      order.paymentResult = {
+        id: req.body.id,
+        status: req.body.status,
+        update_time: req.body.update_time,
+        email_address: req.body.email_address,
+      };
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: `Error updating order: ${error.message}` });
+  }
+};
+const getMyOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+};
+const getOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({}).populate('user', 'id name');
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders' });
+  }
+};
+const updateOrderToDelivered = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+      order.orderStatus = 'Delivered';
+      order.statusHistory.push({ status: 'Delivered', date: Date.now() });
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order' });
+  }
+};
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { status, trackingNumber, carrier } = req.body;
+    const validStatuses = ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+    const order = await Order.findById(req.params.id);
+    if (order) {
+      order.orderStatus = status;
+      order.statusHistory.push({ status, date: Date.now() });
+      if (status === 'Shipped') {
+        order.shippedAt = Date.now();
+        if (trackingNumber) order.trackingNumber = trackingNumber;
+        if (carrier) order.carrier = carrier;
+      }
+      if (status === 'Delivered') {
+        order.isDelivered = true;
+        order.deliveredAt = Date.now();
+      }
+      const updatedOrder = await order.save();
+      res.json(updatedOrder);
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: `Error updating order status: ${error.message}` });
+  }
+};
+module.exports = {
+  addOrderItems,
+  getOrderById,
+  updateOrderToPaid,
+  getMyOrders,
+  getOrders,
+  updateOrderToDelivered,
+  updateOrderStatus,
+};
+const Product = require('../models/product');
+const Category = require('../models/category');
+const getProducts = async (req, res) => {
+  try {
+    const { keyword, category, size, color, minPrice, maxPrice } = req.query;
+    let query = {};
+    if (keyword) {
+      query.name = { $regex: keyword, $options: 'i' };
+    }
+    if (category) {
+      const mongoose = require('mongoose');
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        query.category = category;
+      } else {
+        const categoryDoc = await Category.findOne({ name: { $regex: `^${category}$`, $options: 'i' } });
+        if (categoryDoc) {
+          query.category = categoryDoc._id;
+        } else {
+          return res.json([]);
+        }
+      }
+    }
+    if (size) {
+      query.sizes = { $in: [size] };
+    }
+    if (color) {
+      query.$or = [
+        { 'colors.name': color },
+        { 'colors.hex': color }
+      ];
+    }
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+    const products = await Product.find(query).populate('category', 'name');
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching products' });
+  }
+};
+const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).populate('category', 'name');
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching product' });
+  }
+};
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      await Product.deleteOne({ _id: product._id });
+      res.json({ message: 'Product removed' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting product' });
+  }
+};
+const createProduct = async (req, res) => {
+  try {
+    const { price = 0, countInStock = 0 } = req.body;
+    if (price < 0 || countInStock < 0) {
+      return res.status(400).json({ message: 'Price and stock cannot be negative' });
+    }
+    const product = new Product({
+      name: req.body.name || 'Sample name',
+      price,
+      image: req.body.image || '/images/sample.jpg',
+      category: req.body.category || '60d5ecb54d6f8f5548c26f75',
+      countInStock,
+      description: req.body.description || 'Sample description',
+      sizes: req.body.sizes || ['S', 'M', 'L'],
+      colors: req.body.colors || [
+        { name: 'Black', hex: '#000000', image: req.body.image || '/images/sample.jpg' },
+        { name: 'White', hex: '#ffffff', image: req.body.image || '/images/sample.jpg' }
+      ],
+    });
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating product' });
+  }
+};
+const updateProduct = async (req, res) => {
+  const { name, price, description, image, category, countInStock, sizes, colors } = req.body;
+  if (price !== undefined && price < 0) {
+    return res.status(400).json({ message: 'Price cannot be negative' });
+  }
+  if (countInStock !== undefined && countInStock < 0) {
+    return res.status(400).json({ message: 'Stock cannot be negative' });
+  }
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      product.name = name || product.name;
+      product.price = price || product.price;
+      product.description = description || product.description;
+      product.image = image || product.image;
+      product.category = category || product.category;
+      product.countInStock = countInStock || product.countInStock;
+      product.sizes = sizes || product.sizes;
+      product.colors = colors || product.colors;
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating product' });
+  }
+};
+module.exports = {
+  getProducts,
+  getProductById,
+  deleteProduct,
+  createProduct,
+  updateProduct,
+};
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+const Order = require('../models/order');
+const Product = require('../models/product');
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret',
+});
+const createRazorpayOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const order = await Order.findById(orderId).populate('user', 'name email');
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+    if (order.isPaid || order.paymentStatus === 'Paid') {
+      return res.status(400).json({ message: 'Order is already paid' });
+    }
+    const amountInPaise = Math.round(order.totalPrice * 100);
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: `receipt_order_${order._id}`,
+    };
+    const razorpayOrder = await razorpay.orders.create(options);
+    res.json({
+      orderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
+    });
+  } catch (error) {
+    console.error('Razorpay Order Creation Error:', error);
+    res.status(500).json({ message: 'Failed to create Razorpay order' });
+  }
+};
+const verifyRazorpayPayment = async (req, res) => {
+  try {
+    const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    const key_secret = process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret';
+    let hmac = crypto.createHmac('sha256', key_secret); 
+    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+    const generated_signature = hmac.digest('hex');
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed' });
+    }
+    if (!order.isPaid) {
+      for (const item of order.orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          if (product.countInStock < item.qty) {
+             return res.status(400).json({ message: `Insufficient stock for ${product.name} to complete order.` });
+          }
+          await Product.updateOne({ _id: product._id }, { $inc: { countInStock: -item.qty } });
+        }
+      }
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentStatus = 'Paid';
+      order.paymentMethod = 'Razorpay';
+      order.paymentResult = {
+        id: razorpay_payment_id,
+        status: 'success',
+        update_time: new Date().toISOString(),
+        email_address: req.user.email,
+      };
+      order.razorpayOrderId = razorpay_order_id;
+      order.razorpayPaymentId = razorpay_payment_id;
+      order.statusHistory.push({ status: 'Paid', date: Date.now() });
+      const updatedOrder = await order.save();
+      return res.json(updatedOrder);
+    }
+    res.json(order);
+  } catch (error) {
+    console.error('Razorpay Verification Error:', error);
+    res.status(500).json({ message: 'Server error during payment verification' });
+  }
+};
+module.exports = {
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+};

@@ -5,6 +5,7 @@ import "./home.css";
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState("white");
   const navigate = useNavigate();
@@ -25,12 +26,14 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsRes, categoriesRes] = await Promise.all([
+        const [productsRes, categoriesRes, bannersRes] = await Promise.all([
           api.get("/products"),
           api.get("/categories"),
+          api.get("/banners").catch(() => ({ data: [] }))
         ]);
         setProducts(productsRes.data);
         setCategories(categoriesRes.data);
+        setBanners(bannersRes.data.filter(b => b.isActive));
         setLoading(false);
       } catch (err) {
         console.error("Failed to load data", err);
@@ -68,6 +71,17 @@ const Home = () => {
     .slice(0, 4);
   return (
     <div className="home-page">
+      {banners.length > 0 && (
+        <section className="homepage-banners">
+          <div className="banner-scroll-container">
+            {banners.map((banner) => (
+              <div key={banner._id} className="banner-slide">
+                <img src={banner.imageUrl} alt={banner.title} className="banner-image" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="hero-section">
         <div className="hero-content">
           <div className="hero-overline">

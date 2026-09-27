@@ -5,9 +5,11 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-container">
-        <div className="footer-section">
-          <h3>SoftraTees</h3>
-          <p>Your one-stop shop for high-quality customized t-shirts.</p>
+        <div className="footer-brand">
+          <h3 className="footer-title">SoftraTees</h3>
+          <p className="footer-description">
+            Your one-stop shop for high-quality<br />customized t-shirts.
+          </p>
         </div>
         <div className="footer-section">
           <h4>Quick Links</h4>
@@ -20,7 +22,8 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Contact Us</h4>
           <ul>
-            <li>Email: support@softratees.com</li>
+            <li>Email: softraadmin@gmail.com</li>
+            <li>Phone: +91-9629792292</li>
           </ul>
         </div>
       </div>

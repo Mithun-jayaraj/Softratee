@@ -1,0 +1,165 @@
+﻿const express = require('express');
+const router = express.Router();
+const {
+  authUser,
+  registerUser,
+  getUserProfile,
+  updateUserProfile,
+  getUsers,
+  deleteUser,
+  getUserById,
+  updateUser,
+  generateOtp,
+  verifyOtp,
+  resetPassword,
+} = require('../controllers/auth-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+
+router.post('/generate-otp', generateOtp);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password', resetPassword);
+router.route('/').get(protect, admin, getUsers);
+router.post('/register', registerUser);
+router.post('/login', authUser);
+router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
+router
+  .route('/:id')
+  .delete(protect, admin, deleteUser)
+  .get(protect, admin, getUserById)
+  .put(protect, admin, updateUser);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  getBanners,
+  createBanner,
+  updateBanner,
+  deleteBanner,
+} = require('../controllers/banner-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+router.route('/').get(getBanners).post(protect, admin, createBanner);
+router.route('/:id').put(protect, admin, updateBanner).delete(protect, admin, deleteBanner);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  getCategories,
+  createCategory,
+  deleteCategory,
+} = require('../controllers/category-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+router.route('/').get(getCategories).post(protect, admin, createCategory);
+router.route('/:id').delete(protect, admin, deleteCategory);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  getCoupons,
+  getAvailableCoupons,
+  createCoupon,
+  deleteCoupon,
+  verifyCoupon,
+} = require('../controllers/coupon-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+router.route('/').get(protect, admin, getCoupons).post(protect, admin, createCoupon);
+router.route('/available').get(getAvailableCoupons);
+router.route('/verify').post(verifyCoupon);
+router.route('/:id').delete(protect, admin, deleteCoupon);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  getDesigns,
+  createDesign,
+  deleteDesign,
+} = require('../controllers/design-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+router.route('/').get(getDesigns).post(protect, admin, createDesign);
+router.route('/:id').delete(protect, admin, deleteDesign);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  addOrderItems,
+  getOrderById,
+  updateOrderToPaid,
+  getMyOrders,
+  getOrders,
+  updateOrderToDelivered,
+  updateOrderStatus,
+} = require('../controllers/order-controller');
+const { protect, admin, customer } = require('../middleware/auth-middleware');
+router.route('/').post(protect, customer, addOrderItems).get(protect, admin, getOrders);
+router.route('/myorders').get(protect, getMyOrders);
+router.route('/:id').get(protect, getOrderById);
+router.route('/:id/pay').put(protect, customer, updateOrderToPaid);
+router.route('/:id/deliver').put(protect, admin, updateOrderToDelivered);
+router.route('/:id/status').put(protect, admin, updateOrderStatus);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const {
+  getProducts,
+  getProductById,
+  deleteProduct,
+  createProduct,
+  updateProduct,
+} = require('../controllers/product-controller');
+const { protect, admin } = require('../middleware/auth-middleware');
+router.route('/').get(getProducts).post(protect, admin, createProduct);
+router
+  .route('/:id')
+  .get(getProductById)
+  .delete(protect, admin, deleteProduct)
+  .put(protect, admin, updateProduct);
+module.exports = router;
+const express = require('express');
+const router = express.Router();
+const { createRazorpayOrder, verifyRazorpayPayment } = require('../controllers/razorpay-controller');
+const { protect, customer } = require('../middleware/auth-middleware');
+router.post('/create-order', protect, customer, createRazorpayOrder);
+router.post('/verify', protect, customer, verifyRazorpayPayment);
+module.exports = router;
+const express = require('express');
+const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
+const { protect, admin } = require('../middleware/auth-middleware');
+const router = express.Router();
+const storage = multer.memoryStorage();
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload only images.'), false);
+  }
+};
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, 
+  },
+  fileFilter
+});
+router.post('/', protect, admin, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image provided' });
+    }
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: 'custom-tees',
+    });
+    res.json({
+      message: 'Image uploaded successfully',
+      imageUrl: result.secure_url,
+    });
+  } catch (error) {
+    console.error('[Upload Error]:', error);
+    if (error.message === 'Not an image! Please upload only images.') {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message || 'Error uploading image', details: error });
+  }
+});
+module.exports = router;

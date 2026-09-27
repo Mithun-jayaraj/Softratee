@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
+import { Eye, ShoppingCart } from "lucide-react";
 import "./customizer.css";
 const defaultColors = [
   { name: 'White', hex: '#FFFFFF' },
@@ -115,9 +116,9 @@ const Customizer = () => {
     <div className="customizer-page">
       <div className="customizer-header-row" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem', display: 'flex', flexDirection: 'column' }}>
         <button 
-          className="btn-link" 
+          className="btn-back-custom" 
           onClick={() => navigate(-1)} 
-          style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem', border: '1px solid #ddd', borderRadius: '4px', textDecoration: 'none', color: '#333', background: '#fff', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          style={{ alignSelf: 'flex-start', marginBottom: '1rem' }}
         >
           &larr; Go Back
         </button>
@@ -448,13 +449,18 @@ const Customizer = () => {
           <div className="action-buttons mt-3">
             <button
               className="btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               onClick={() => setShowPreview(true)}
             >
-              👁️ Preview
+              <Eye size={18} strokeWidth={2} /> Preview
             </button>
             {!user?.isAdmin && (
-              <button className="btn-primary-dark" onClick={handleAddToCart}>
-                🛒 Add to Cart
+              <button 
+                className="btn-primary-dark" 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart size={18} strokeWidth={2} /> Add to Cart
               </button>
             )}
           </div>
@@ -574,8 +580,12 @@ const Customizer = () => {
                 Edit
               </button>
               {!user?.isAdmin && (
-                <button className="btn-primary-dark" onClick={handleAddToCart}>
-                  Add to Cart
+                <button 
+                  className="btn-primary-dark" 
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart size={18} strokeWidth={2} /> Add to Cart
                 </button>
               )}
             </div>

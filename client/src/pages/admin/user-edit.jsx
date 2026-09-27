@@ -9,6 +9,7 @@ const AdminUserEdit = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,6 +23,7 @@ const AdminUserEdit = () => {
         const { data } = await api.get(`/auth/${id}`);
         setName(data.name);
         setEmail(data.email);
+        setMobileNumber(data.mobileNumber || '');
         setIsAdmin(data.isAdmin);
         setLoading(false);
       } catch (err) {
@@ -33,8 +35,13 @@ const AdminUserEdit = () => {
   }, [id, user, navigate]);
   const submitHandler = async (e) => {
     e.preventDefault();
+    const trimmedMobile = mobileNumber.trim();
+    if (trimmedMobile && !/^\d{10}$/.test(trimmedMobile)) {
+      alert('Please enter a valid 10-digit mobile number');
+      return;
+    }
     try {
-      await api.put(`/auth/${id}`, { name, email, isAdmin });
+      await api.put(`/auth/${id}`, { name, email, mobileNumber: trimmedMobile, isAdmin });
       navigate('/admin/users');
     } catch (err) {
       alert(err.response?.data?.message || 'Update failed');
@@ -63,6 +70,13 @@ const AdminUserEdit = () => {
                 <div className="form-group">
                   <label>Email Address</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                  <label>Mobile Number</label>
+                  <div style={{ display: 'flex' }}>
+                    <span style={{ padding: '0.375rem 0.75rem', backgroundColor: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRight: 'none', borderTopLeftRadius: 'var(--radius-sm)', borderBottomLeftRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>+91</span>
+                    <input type="text" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="10-digit mobile number" style={{ flex: 1, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
+                  </div>
                 </div>
                 <div className="form-group">
                   <label style={{ display: 'block', marginBottom: '0.5rem' }}>Admin Role</label>

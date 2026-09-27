@@ -8,6 +8,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
@@ -19,6 +20,7 @@ const Profile = () => {
       navigate('/login');
     } else {
       setName(user.name);
+      setMobileNumber(user.mobileNumber || '');
       if (user.defaultAddress) {
         setAddress(user.defaultAddress.address || '');
         setCity(user.defaultAddress.city || '');
@@ -29,10 +31,16 @@ const Profile = () => {
   }, [user, navigate]);
   const submitHandler = async (e) => {
     e.preventDefault();
+    const trimmedMobile = mobileNumber.trim();
+    if (trimmedMobile && !/^\d{10}$/.test(trimmedMobile)) {
+      setUpdateMessage({ text: 'Please enter a valid 10-digit mobile number', type: 'error' });
+      return;
+    }
     try {
       const { data } = await api.put('/auth/profile', {
         name,
         password,
+        mobileNumber: trimmedMobile,
         defaultAddress: { address, city, postalCode, country }
       });
       localStorage.setItem('userInfo', JSON.stringify(data));
@@ -70,6 +78,13 @@ const Profile = () => {
               <div className="form-group">
                 <label>Email Address</label>
                 <input type="email" value={user.email} disabled style={{ backgroundColor: 'var(--color-bg)' }} />
+              </div>
+              <div className="form-group">
+                <label>Mobile Number</label>
+                <div style={{ display: 'flex' }}>
+                  <span style={{ padding: '0.375rem 0.75rem', backgroundColor: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRight: 'none', borderTopLeftRadius: 'var(--radius-sm)', borderBottomLeftRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>+91</span>
+                  <input type="text" value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="10-digit mobile number" style={{ flex: 1, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }} />
+                </div>
               </div>
               <div className="form-group mb-0">
                 <label>New Password (Optional)</label>
