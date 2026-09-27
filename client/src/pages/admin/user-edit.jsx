@@ -41,33 +41,55 @@ const AdminUserEdit = () => {
     }
   };
   return (
-    <div className="admin-page">
-      <h2>Edit User</h2>
+    <div className="page-container admin-page">
+      <div className="admin-header-section">
+        <h2 className="admin-page-title">Edit User</h2>
+        <p className="admin-page-subtitle">Update user information and account permissions.</p>
+      </div>
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
         <div className="error">{error}</div>
       ) : (
-        <form className="admin-form" onSubmit={submitHandler}>
-          <div className="form-group">
-            <label>Name</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input 
-              type="checkbox" 
-              id="isadmin"
-              checked={isAdmin} 
-              onChange={(e) => setIsAdmin(e.target.checked)} 
-            />
-            <label htmlFor="isadmin" style={{ margin: 0 }}>Is Admin</label>
-          </div>
-          <button type="submit" className="btn btn-primary">Update</button>
-        </form>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <form onSubmit={submitHandler}>
+            <div className="card">
+              <div className="form-section">
+                <h3>User Information</h3>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Admin Role</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input 
+                      type="checkbox" 
+                      id="isadmin"
+                      checked={isAdmin} 
+                      onChange={(e) => setIsAdmin(e.target.checked)} 
+                      style={{ cursor: 'pointer', width: 'auto', height: 'auto', margin: 0 }}
+                    />
+                    <label htmlFor="isadmin" style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>Administrator access</label>
+                  </div>
+                  <small className="text-muted" style={{ display: 'block', marginTop: '0.5rem' }}>Administrators can access administrative features.</small>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn btn-light" onClick={() => navigate('/admin/users')}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Update User
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );
