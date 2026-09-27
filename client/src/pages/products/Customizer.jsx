@@ -34,29 +34,36 @@ const Customizer = () => {
   const [showPreview, setShowPreview] = useState(false);
   useEffect(() => {
     const fetchProductAndDesigns = async () => {
-      try {
-        const { data: productData } = await api.get(`/products/${id}`);
-        setProduct(productData);
-        if (!size && productData.sizes?.length > 0)
-          setSize(productData.sizes[0]);
-        if (!selectedColor) {
-          const colorsToUse = defaultColors.map(dc => {
-            const found = productData.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
-            return found && found.image ? { ...dc, image: found.image } : null;
-          }).filter(Boolean);
-          const initialColorParam = searchParams.get("color");
-          const matchedColor = colorsToUse.find(
-            (c) => c.name === initialColorParam || c.hex === initialColorParam,
-          );
-          setSelectedColor(matchedColor || (colorsToUse.length > 0 ? colorsToUse[0] : null));
+        try {
+          const { data: productData } = await api.get(`/products/${id}`);
+          setProduct(productData);
+          if (!size && productData.sizes?.length > 0)
+            setSize(productData.sizes[0]);
+          if (!selectedColor) {
+            const colorsToUse = defaultColors.map(dc => {
+              const found = productData.colors?.find(c => c.name?.toLowerCase() === dc.name.toLowerCase());
+              return found && found.image ? { ...dc, image: found.image } : null;
+            }).filter(Boolean);
+            const initialColorParam = searchParams.get("color");
+            const matchedColor = colorsToUse.find(
+              (c) => c.name === initialColorParam || c.hex === initialColorParam,
+            );
+            setSelectedColor(matchedColor || (colorsToUse.length > 0 ? colorsToUse[0] : null));
+          }
+        } catch (err) {
+          alert("Failed to load product data");
+          setLoading(false);
+          return;
         }
-        const { data: designsData } = await api.get("/designs");
-        setDesigns(designsData);
+
+        try {
+          const { data: designsData } = await api.get("/designs");
+          setDesigns(designsData);
+        } catch (err) {
+          console.warn("Could not load designs", err);
+        }
+        
         setLoading(false);
-      } catch (err) {
-        alert("Failed to load data");
-        setLoading(false);
-      }
     };
     fetchProductAndDesigns();
   }, [id, size, selectedColor, searchParams]);
@@ -95,7 +102,7 @@ const Customizer = () => {
   if (loading)
     return <div className="customizer-loading">Loading product...</div>;
   const availableColors = defaultColors.map(dc => {
-    const found = product?.colors?.find(c => c.name.toLowerCase() === dc.name.toLowerCase());
+    const found = product?.colors?.find(c => c.name?.toLowerCase() === dc.name.toLowerCase());
     return found && found.image ? { ...dc, image: found.image } : null;
   }).filter(Boolean);
   
